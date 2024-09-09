@@ -1,333 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    >
 
-    <Switch
-        android:id="@+id/switch39"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="4dp"
-        android:paddingStart="10dp"
-        android:text="Sunset viewing"
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="215dp"
+        android:layout_height="61dp"
+        android:fontFamily="sans-serif-condensed-medium"
+        android:gravity="center"
+        android:text="Activites"
+        android:textColor="#0B8EA2"
+        android:textSize="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch38"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="8dp"
-        android:paddingStart="10dp"
-        android:text="Trekking"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/switch39" />
-
-    <Switch
-        android:id="@+id/switch37"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:paddingStart="10dp"
-        android:text="Picnics"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/switch38"
-        app:layout_constraintHorizontal_bias="0.647"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch36"
-        android:layout_width="128dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="4dp"
-        android:paddingStart="10dp"
-        android:text="Beach treks"
-        app:layout_constraintBottom_toTopOf="@+id/switch39"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch35"
-        android:layout_width="132dp"
-        android:layout_height="43dp"
-        android:layout_marginEnd="4dp"
-        android:paddingStart="10dp"
-        android:text="Sunbathing "
-        app:layout_constraintBottom_toTopOf="@+id/switch38"
-        app:layout_constraintEnd_toStartOf="@+id/switch36" />
-
-    <Switch
-        android:id="@+id/switch34"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="4dp"
-        android:paddingStart="10dp"
-        android:text="Beach volleyball"
-        app:layout_constraintBottom_toTopOf="@+id/switch37"
-        app:layout_constraintEnd_toStartOf="@+id/switch35"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch33"
-        android:layout_width="128dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="10dp"
-        android:text="Strolls "
-        app:layout_constraintBottom_toTopOf="@+id/switch36"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch30"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="8dp"
-        android:paddingStart="10dp"
-        android:text="Wind Surfing"
-        app:layout_constraintBottom_toTopOf="@+id/switch34"
-        app:layout_constraintEnd_toStartOf="@+id/switch29"
-        app:layout_constraintHorizontal_bias="0.291"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch28"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
-        android:paddingStart="10dp"
-        android:text="Sand art festival "
-        app:layout_constraintBottom_toTopOf="@+id/switch33"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch23"
-        android:layout_width="121dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="12dp"
-        android:paddingStart="10dp"
-        android:text="Bird watching "
-        app:layout_constraintBottom_toTopOf="@+id/switch30"
-        app:layout_constraintEnd_toStartOf="@+id/switch20"
-        app:layout_constraintHorizontal_bias="0.571"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch22"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="8dp"
-        android:paddingStart="10dp"
-        android:text="Kite flying "
-        app:layout_constraintBottom_toTopOf="@+id/switch20"
-        app:layout_constraintEnd_toStartOf="@+id/switch21" />
-
-    <Switch
-        android:id="@+id/switch21"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="4dp"
-        android:paddingStart="10dp"
-        android:text="Fishing"
-        app:layout_constraintBottom_toTopOf="@+id/switch28"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch20"
-        android:layout_width="138dp"
-        android:layout_height="57dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
-        android:text="Beachcombing "
-        android:textSize="13dp"
-        app:layout_constraintBottom_toTopOf="@+id/switch29"
-        app:layout_constraintEnd_toStartOf="@+id/switch28" />
-
-    <Switch
-        android:id="@+id/switch18"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
-        android:text="Water skiing "
-        app:layout_constraintBottom_toTopOf="@+id/switch21"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch16"
-        android:layout_width="132dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
-        android:text="Glass bottom boat ride "
-        app:layout_constraintBottom_toTopOf="@+id/switch22"
-        app:layout_constraintEnd_toStartOf="@+id/switch18" />
-
-    <Switch
-        android:id="@+id/switch15"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="10dp"
-        android:text="Sailing "
-        app:layout_constraintBottom_toTopOf="@+id/switch19"
-        app:layout_constraintEnd_toStartOf="@+id/switch16"
-        app:layout_constraintHorizontal_bias="0.461"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch13"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:paddingStart="10dp"
-        android:text="Sea walk "
-        app:layout_constraintBottom_toTopOf="@+id/switch18"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch12"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="10dp"
-        android:text="Tubing "
-        app:layout_constraintBottom_toTopOf="@+id/switch16"
-        app:layout_constraintEnd_toStartOf="@+id/switch13" />
-
-    <Switch
-        android:id="@+id/switch19"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="12dp"
-        android:paddingStart="10dp"
-        android:text="Surfing "
-        app:layout_constraintBottom_toTopOf="@+id/switch23"
-        app:layout_constraintEnd_toStartOf="@+id/switch22"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch29"
-        android:layout_width="136dp"
-        android:layout_height="37dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="10dp"
-        android:text="Beach walks"
-        app:layout_constraintBottom_toTopOf="@+id/switch35"
-        app:layout_constraintEnd_toStartOf="@+id/switch33" />
-
-    <Switch
-        android:id="@+id/switch11"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="4dp"
-        android:text="Canoeing "
-        app:layout_constraintBottom_toTopOf="@+id/switch15"
-        app:layout_constraintEnd_toStartOf="@+id/switch12"
-        app:layout_constraintHorizontal_bias="0.29"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch9"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="4dp"
-        android:paddingStart="10dp"
-        android:text="Canoeing "
-        app:layout_constraintBottom_toTopOf="@+id/switch13"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Switch
-        android:id="@+id/switch8"
-        android:layout_width="125dp"
-        android:layout_height="46dp"
-        android:layout_marginBottom="4dp"
-        android:paddingStart="10dp"
-        android:text="Kayaking"
-        app:layout_constraintBottom_toTopOf="@+id/switch12"
-        app:layout_constraintEnd_toStartOf="@+id/switch9"
-        app:layout_constraintHorizontal_bias="0.434"
-        app:layout_constraintStart_toEndOf="@+id/switch7" />
-
-    <Switch
-        android:id="@+id/switch1"
-        android:layout_width="120dp"
-        android:layout_height="50dp"
-        android:text="Swimming"
-        app:layout_constraintEnd_toStartOf="@+id/switch2"
-        app:layout_constraintHorizontal_bias="0.538"
-        app:layout_constraintStart_toEndOf="@+id/switch3"
-        tools:layout_editor_absoluteY="0dp" />
-
-    <Switch
-        android:id="@+id/switch2"
-        android:layout_width="130dp"
-        android:layout_height="50dp"
-        android:text="Scuba Diving"
-        app:layout_constraintBottom_toTopOf="@+id/switch5"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.004" />
 
-    <Switch
-        android:id="@+id/switch3"
-        android:layout_width="130dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="4dp"
-        android:text="Parasailing"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView2"
+        android:layout_width="320dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="40dp"
+        app:layout_constraintEnd_toEndOf="@+id/textView2"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintStart_toStartOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
 
-    <Switch
-        android:id="@+id/switch4"
-        android:layout_width="129dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:text="Spot dolphins"
-        app:layout_constraintBottom_toTopOf="@+id/switch7"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switch3"
-        app:layout_constraintVertical_bias="0.275" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <Switch
-        android:id="@+id/switch5"
-        android:layout_width="130dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
-        android:paddingStart="10dp"
-        android:text="Snorkeling "
-        app:layout_constraintBottom_toTopOf="@+id/switch9"
-        app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif-black"
+                android:gravity="center"
+                android:text="Weather-Based Ideal Activites"
+                android:textColor="#143BAD"
+                android:textSize="20dp" />
 
-    <Switch
-        android:id="@+id/switch6"
-        android:layout_width="127dp"
-        android:layout_height="39dp"
-        android:paddingStart="5dp"
-        android:text="Jet skiing "
-        app:layout_constraintBottom_toTopOf="@+id/switch8"
-        app:layout_constraintEnd_toStartOf="@+id/switch5"
-        app:layout_constraintHorizontal_bias="0.608"
-        app:layout_constraintStart_toEndOf="@+id/switch4"
-        app:layout_constraintTop_toBottomOf="@+id/switch1"
-        app:layout_constraintVertical_bias="0.29" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ideal_activities"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp" />
 
-    <Switch
-        android:id="@+id/switch7"
-        android:layout_width="128dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginBottom="4dp"
-        android:text="Banana boat rides "
-        app:layout_constraintBottom_toTopOf="@+id/switch11"
-        app:layout_constraintStart_toStartOf="parent" />
+        </LinearLayout>
+
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView3"
+        android:layout_width="320dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="40dp"
+        app:layout_constraintEnd_toEndOf="@+id/cardView2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/cardView2"
+        app:layout_constraintTop_toBottomOf="@+id/cardView2">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-black"
+                android:gravity="center"
+                android:text="Other Activities"
+                android:textColor="#143BAD"
+                android:textSize="20dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/other_activites"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp" />
+
+        </LinearLayout>
+
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="320dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="40dp"
+        app:layout_constraintEnd_toEndOf="@+id/cardView3"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/cardView3"
+        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="sans-serif-black"
+                        android:gravity="center"
+                        android:textColor="#901F20"
+                        android:text="Prohibited Activities"
+                        android:textSize="20dp"
+                        />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/prohibited_activites"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingLeft="120dp"
+                        android:paddingTop="10dp"
+                        />
+
+                </LinearLayout>
+
+
+    </androidx.cardview.widget.CardView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

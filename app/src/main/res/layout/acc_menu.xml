@@ -1,125 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:fontFamily="@font/baloo_chettan"
-        android:text="Beach App"
-        android:textColor="#17BFE9"
-        android:textSize="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="398dp"
-        android:layout_height="375dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.461"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.233">
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/baloo_chettan"
+            android:text="Beach App"
+            android:textColor="#17BFE9"
+            android:textSize="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="392dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="2dp"
-            app:cardCornerRadius="30dp"
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="398dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.473"
+            app:layout_constraintHorizontal_bias="0.461"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.109">
+            app:layout_constraintVertical_bias="0.233">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+            <androidx.cardview.widget.CardView
+                android:layout_width="392dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="2dp"
+                app:cardCornerRadius="30dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.473"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.109">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:fontFamily="sans-serif-condensed-medium"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                    android:gravity="center"
-                    android:text="Account Details"
-                    android:textColor="#103278" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-condensed-medium"
 
-                <TextView
-                    android:id="@+id/name"
+                        android:gravity="center"
+                        android:text="Account Details"
+                        android:textColor="#103278" />
+
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:paddingLeft="20dp"
+                        android:text="Name : Rana"
+                        android:textColor="#103278" />
+
+                    <TextView
+                        android:id="@+id/loc"
+                        android:layout_width="match_parent"
+                        android:layout_height="31dp"
+                        android:paddingLeft="20dp"
+                        android:text="Location: Mariana Beach"
+                        android:textColor="#103278" />
+
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="392dp"
+                android:layout_height="255dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="30dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.473"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.109">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="30dp"
-                    android:paddingLeft="20dp"
-                    android:text="Name : Ayush Singh"
-                    android:textColor="#103278" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/loc"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-condensed-medium"
+
+                        android:gravity="center"
+                        android:text="Alert Notification"
+                        android:textColor="#103278" />
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="177dp"
+                        android:nestedScrollingEnabled="true">
+
+                        <include layout="@layout/alert_notification" />
+
+
+                    </ScrollView>
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="392dp"
+                android:layout_height="150dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                app:cardCornerRadius="30dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.473"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.109">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="31dp"
-                    android:paddingLeft="20dp"
-                    android:text="Location: Mariana Beach"
-                    android:textColor="#103278" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:fontFamily="sans-serif-condensed-medium"
+
+                        android:gravity="center"
+                        android:text="Map Type"
+                        android:textColor="#103278" />
 
 
-            </LinearLayout>
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleButtonGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        app:selectionRequired="false"
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="392dp"
-            android:layout_height="255dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="4dp"
-            app:cardCornerRadius="30dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.473"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.109">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:fontFamily="sans-serif-condensed-medium"
-
-                    android:gravity="center"
-                    android:text="Alert Notification"
-                    android:textColor="#103278" />
-
-                <ScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="177dp">
-
-                    <include layout="@layout/beach_activities" />
+                        app:singleSelection="true">
 
 
-                </ScrollView>
-            </LinearLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/toggleButtonNormal"
+                            style="@style/ToggleButtonWithOutline"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:text="Normal"
+                            android:textColor="#414143"
+                            app:icon="@drawable/normal_map"
+                            app:iconGravity="top"
+                            app:iconSize="60dp"
+                            app:iconTint="@null"
+                            app:strokeWidth="0dp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/toggleButtonSatellite"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+
+                            android:text="Satalite"
+                            style="@style/ToggleButtonWithOutline"
+                            android:textColor="#414143"
+                            app:icon="@drawable/statelite_map"
+                            app:iconGravity="top"
+                            app:iconSize="58dp"
+                            app:iconTint="@null"
+                            app:strokeWidth="0dp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/toggleButtonTerrain"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            style="@style/ToggleButtonWithOutline"
+                            android:layout_height="wrap_content"
+
+                            android:text="Terrain"
+                            android:textColor="#414143"
+                            app:checkedIconTint="@null"
+                            app:icon="@drawable/terrains_map"
+                            app:iconGravity="top"
+                            app:iconSize="58dp"
+                            app:iconTint="@null"
+                            app:strokeWidth="0dp" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
 
-        </androidx.cardview.widget.CardView>
+                </LinearLayout>
 
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
