@@ -17,6 +17,7 @@
 
         <!--Search Bar-->
 
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/mapfragment"
             class="com.google.android.gms.maps.SupportMapFragment"
@@ -86,12 +87,13 @@
 
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/coordinatorLayout"
             android:layout_width="match_parent"
             android:layout_height="661dp"
             android:elevation="100dp"
             app:layout_constraintBottom_toTopOf="@+id/menu"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/suggestionRecyclerViewer"
             app:layout_constraintVertical_bias="1.0">
@@ -102,11 +104,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/bottomsheet"
-                app:behavior_peekHeight="0dp"
                 android:elevation="100dp"
+                app:behavior_peekHeight="0dp"
                 app:layout_anchor="@+id/activites"
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
                 <include layout="@layout/beach_activities" />
             </FrameLayout>
 
@@ -116,30 +119,50 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/bottomsheet"
-                app:behavior_peekHeight="0dp"
                 android:elevation="100dp"
+                app:behavior_peekHeight="0dp"
                 app:layout_anchor="@+id/bottom_weather"
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
                 <include layout="@layout/weather" />
             </FrameLayout>
+
+
             <FrameLayout
                 android:id="@+id/bottom_Alert"
                 style="?attr/bottomSheetStyle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/bottomsheet"
-                app:behavior_peekHeight="0dp"
                 android:elevation="100dp"
+                app:behavior_peekHeight="0dp"
                 app:layout_anchor="@+id/bottom_Alert"
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
                 <include layout="@layout/alert" />
             </FrameLayout>
 
+            <FrameLayout
+                android:id="@+id/navibutton"
+                style="?attr/bottomSheetStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottomsheet"
+                android:elevation="30dp"
+                app:behavior_peekHeight="0dp"
+                app:layout_anchor="@+id/bottom_Alert"
+                app:layout_anchorGravity="center"
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                android:visibility="gone"
+                >
+                <include
+                    android:id="@+id/includednavi"
+                    layout="@layout/navigation"/>
+
+            </FrameLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-
 
         <androidx.cardview.widget.CardView
             android:id="@+id/menu"
@@ -221,7 +244,6 @@
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
         </androidx.cardview.widget.CardView>
-
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,14 +1,24 @@
 package com.prototype.beach
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.location.Location
 import android.os.Bundle
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -18,18 +28,24 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.prototype.beach.databinding.ActivityMainBinding
+import org.json.JSONObject
+import com.android.volley.Response
+import com.android.volley.Request
+
+import com.google.android.gms.maps.model.Polyline
+
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
     private var mGoogleMap: GoogleMap? = null
     lateinit var binding: ActivityMainBinding
-
     private var isBottomSheetOpen = false
     private var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -41,19 +57,63 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var OtherActivitiesAdaptor: ActivitiesAdaptor
     private lateinit var ProhibitedActivitiesAdaptor: ProhibitedActivites
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val locationPermissionCode = 101
-
-
+    private lateinit var currentLoc: LatLng
+    private val polylines = mutableListOf<Polyline>()
+    lateinit var destination: LatLng
+    private var placename:String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 //        This part is for map initializtion
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+
+        binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            // Check if the specific button is toggled
+            if (checkedId == binding.includednavi.naviButton.id) {
+                if (isChecked) {
+                    // Button is checked: Call drawRoute
+                    drawRoute(currentLoc, destination)
+                    binding.includednavi.naviButton.text = "Cancel"
+
+                    val startLocation = Location("start").apply {
+                        latitude = currentLoc.latitude
+                        longitude = currentLoc.longitude
+                    }
+
+                    val endLocation = Location("end").apply {
+                        latitude = destination.latitude
+                        longitude = destination.longitude
+                    }
+
+                    // Calculate the distance in meters
+                    val distance = startLocation.distanceTo(endLocation)
+
+                    binding.includednavi.placename.text = placename
+                    val formattedDistance = String.format("%.2f", distance)
+                    binding.includednavi.dis.text = "$formattedDistance meters"
+
+                    // Display the distance in your app (e.g., via Toast)
+                    binding.includednavi.navcard.visibility = View.VISIBLE
+
+                } else {
+                    binding.includednavi.naviButton.text = "Find Route"
+                    // Button is unchecked: Call clearPreviousPolylines
+                    binding.includednavi.navcard.visibility = View.GONE
+                    clearPreviousPolylines()
+                }
+            }
+        }
+
+
+
 
 
 //        This part is for  bottomsheet for the menu
@@ -68,6 +128,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val bottommenu = binding.bottommenu
         bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
             if (ischecked) {
+                binding.navibutton.visibility = View.GONE
+                binding.includednavi.navi.clearChecked()
                 when (checkid) {
                     R.id.act -> {
                         bottomSheet_activities()
@@ -166,11 +228,163 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     //This function is for map initilization
     override fun onMapReady(p0: GoogleMap) {
         mGoogleMap = p0
+        checkLocationPermission()
+        val map = mGoogleMap
+        map?.setOnMarkerClickListener { marker ->
+            marker.showInfoWindow()
+            navigation(marker.position,marker.title)
+            binding.bottommenu.clearChecked()
+            true
+        }
+
+        map?.setOnMapClickListener {
+            // Hide the button
+            binding.navibutton.visibility = View.GONE
+            binding.includednavi.navi.clearChecked()
+            binding.bottommenu.clearChecked()
+        }
+
+    }
+
+    private fun navigation(markercord: LatLng , title : String?) {
+        placename = title
+        binding.navibutton.visibility = View.VISIBLE
+        binding.includednavi.navi.clearChecked()
+        destination = markercord
+
+    }
+
+//Navigation to a point
+    private fun drawRoute(currentLoc: LatLng, destination: LatLng) {
+        // Clear existing polylines if needed (optional)
+        clearPreviousPolylines()
+
+        // Create a PolylineOptions object to customize the polyline appearance
+        val polylineOptions = PolylineOptions()
+            .add(currentLoc) // Add current location
+            .add(destination) // Add destination (marker position)
+            .color(Color.BLUE) // Set polyline color
+            .width(10f) // Set polyline width
+
+        // Draw the polyline on the map and store it in the list
+        mGoogleMap?.addPolyline(polylineOptions)?.let { polyline ->
+            polylines.add(polyline)
+        }
+    }
+
+    private fun clearPreviousPolylines() {
+        // Iterate through the list and remove each polyline
+        for (polyline in polylines) {
+            polyline.remove()
+        }
+        // Clear the list after removing the polylines
+        polylines.clear()
     }
 
 
 
+
+
+
+
+
+    // Function to find the route from current location to the selected marker and draw it
+//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
+        // Use the Directions API to get the route between origin and destination
+//        val path: MutableList<List<LatLng>> = ArrayList()
+//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
+//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
+//                response ->
+//            val jsonResponse = JSONObject(response)
+//            // Get routes
+//            val routes = jsonResponse.getJSONArray("routes")
+//            val legs = routes.getJSONObject(0).getJSONArray("legs")
+//            val steps = legs.getJSONObject(0).getJSONArray("steps")
+//            for (i in 0 until steps.length()) {
+//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+//                path.add(PolyUtil.decode(points))
+//            }
+//            for (i in 0 until path.size) {
+//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
+//            }
+//        }, Response.ErrorListener {
+//                _ ->
+//        }){}
+//        val requestQueue = Volley.newRequestQueue(this)
+//        requestQueue.add(directionsRequest)
+
+//    }
+
+
+
+    //This is for user locaton
+    private fun checkLocationPermission() {
+        // Check for the fine location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Request the permission if it's not granted
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                locationPermissionCode
+            )
+        } else {
+            // If permission is granted, enable live location updates
+            enableUserLocation()
+        }
+    }
+
+    private fun enableUserLocation() {
+        try {
+            mGoogleMap?.isMyLocationEnabled = true
+            mGoogleMap?.uiSettings?.isMyLocationButtonEnabled = true
+
+            // Request location updates to keep user's location updated
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                location?.let {
+                    updateMapLocation(it)
+                    currentLoc = LatLng(it.latitude, it.longitude)
+                }
+            }
+        } catch (e: SecurityException) {
+            Toast.makeText(
+                this,
+                "Location permission is required to show your location",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun updateMapLocation(location: Location) {
+        // Set the map's camera position to the current location of the device
+        val currentLatLng = LatLng(location.latitude, location.longitude)
+
+        // Optional: Add a marker at the current location
+        mGoogleMap?.addMarker(
+            MarkerOptions().position(currentLatLng).title("You are here")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.you_round))
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == locationPermissionCode) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                enableUserLocation()
+            } else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
     //    This function is for bottom sheet for menu
+
     private fun saveToggleState(buttonId: Int, isChecked: Boolean) {
         val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
         sharedPreferences.edit().putBoolean(buttonId.toString(), isChecked).apply()
@@ -184,7 +398,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         ) // Default to unchecked if not saved
     }
-
 
 
     private fun bottomSheet_menu() {
@@ -278,6 +491,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //    This is function is for ontoggle event for suggestion
     override fun onToggleClick(position: Int, isChecked: Boolean) {
+        binding.navibutton.visibility = View.GONE
+        binding.includednavi.navi.clearChecked()
+        clearPreviousPolylines()
         when (position) {
             0 -> updateMarkers(isChecked, "Hotels")
             1 -> updateMarkers(isChecked, "Hospitals & Clinics")
