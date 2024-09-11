@@ -10,8 +10,10 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/titleShapeableImageView"
+
             android:layout_width="80dp"
             android:layout_height="80dp"
+
             android:layout_marginTop="8dp"
             android:layout_marginLeft="4dp"
 
@@ -25,25 +27,92 @@
 
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/beachHeading_constraintLayout"
+
+            android:layout_width="0sp"
+            android:layout_height="30sp"
+
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintEnd_toEndOf="@id/MainConstraintLayout"
+            app:layout_constraintStart_toEndOf="@id/titleShapeableImageView"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/headingTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:text="Marina Beach"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+
+                app:layout_constraintHorizontal_bias="0.0"
+
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+            />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/beachStatus_recyclerView"
+
+                android:layout_width="100sp"
+                android:layout_height="match_parent"
+
+                app:layout_constraintHorizontal_bias="1.0"
+
+                app:layout_constraintLeft_toRightOf="@id/headingTextView"
+                app:layout_constraintRight_toRightOf="@id/beachHeading_constraintLayout"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <TextView
-            android:id="@+id/headingTextView"
+            android:id="@+id/location_TextView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="20sp"
 
-            android:text="Marina Beach"
+            android:text="Location:"
             android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            android:textSize="12sp"
 
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="32dp"
             android:layout_marginStart="16dp"
 
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toBottomOf="@id/beachHeading_constraintLayout"
+            app:layout_constraintBottom_toTopOf="@id/distance_TextView"
+            app:layout_constraintStart_toEndOf="@id/titleShapeableImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+        />
+
+        <TextView
+            android:id="@+id/distance_TextView"
+            android:layout_width="0dp"
+            android:layout_height="20sp"
+
+            android:text="Distance:"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/titleShapeableImageView"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/location_TextView"
+            app:layout_constraintBottom_toBottomOf="@id/titleShapeableImageView"
+            />
 
-    <!--    Note: "View" is Capital "V", not small v-->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -54,7 +123,6 @@
 
             android:background="@color/black"
             />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

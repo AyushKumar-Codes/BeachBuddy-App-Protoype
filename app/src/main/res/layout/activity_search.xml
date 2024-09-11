@@ -11,9 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-
-
-
+        
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/TopConstraintLayout"
             android:layout_width="match_parent"
@@ -71,6 +69,7 @@
                 app:layout_constraintTop_toBottomOf="@id/RecentSearchesTextView"
                 app:layout_constraintVertical_bias="0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

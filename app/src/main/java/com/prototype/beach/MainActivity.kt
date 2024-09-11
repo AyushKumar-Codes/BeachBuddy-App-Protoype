@@ -48,39 +48,215 @@ import com.prototype.beach.databinding.ActivitySearchBinding
 import java.io.InputStreamReader
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback,
-    SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
-    private var mGoogleMap: GoogleMap? = null
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
+
+    // For data-binding
     lateinit var binding: ActivityMainBinding
-    private var isBottomSheetOpen = false
-    private var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var suggestionAdapter: SuggestionAdapter
+
+    // For maps
+    private var mGoogleMap: GoogleMap? = null
     private val markersMap: MutableMap<String, MutableList<Marker>> = mutableMapOf()
+    private lateinit var mapMarkers_Objects: MutableList<MarkerOptions>
     private val activityPolygons: MutableMap<String, Polygon> = mutableMapOf()
+    private val polylines = mutableListOf<Polyline>()
+    private lateinit var currentLoc: LatLng
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val locationPermissionCode = 101
+    lateinit var destination: LatLng
+
+
+    // For bottomSheets
+    private var isBottomSheetOpen = false
+    private lateinit var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+    private lateinit var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+
+
+    // For RecyclerView
+    private lateinit var recyclerView: RecyclerView
+
+    private lateinit var suggestionAdapter: SuggestionAdapter
     private lateinit var IdealActivitiesAdaptor: ActivitiesAdaptor
     private lateinit var OtherActivitiesAdaptor: ActivitiesAdaptor
     private lateinit var ProhibitedActivitiesAdaptor: ProhibitedActivites
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val locationPermissionCode = 101
-    private lateinit var currentLoc: LatLng
-    private val polylines = mutableListOf<Polyline>()
-    lateinit var destination: LatLng
     private var placename:String? = null
-    private lateinit var mapMarkers_Objects: MutableList<MarkerOptions>
-    private lateinit var beachTrie:Trie
 
 
     // Recycler for beaches
+    private lateinit var beachTrie:Trie
     private lateinit var BeachRecyclerView: RecyclerView
     private lateinit var BeachesList: MutableList<Beach>
-    // Data
+
+    // Built-in data for the user, independent from the server
     private lateinit var AllBeachesList: MutableList<Beach>
 
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        mapMarkers_Objects = mutableListOf()
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
+        // for maps
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+
+        // initialization of the searching features
+        initSearchButton()
+        initBeachesRecycler()
+        initBeachesTrie()
+
+
+        binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            // Check if the specific button is toggled
+            if (checkedId == binding.includednavi.naviButton.id) {
+                if (isChecked) {
+                    // Button is checked: Call drawRoute
+                    drawRoute(currentLoc, destination)
+                    binding.includednavi.naviButton.text = "Cancel"
+
+                    val startLocation = Location("start").apply {
+                        latitude = currentLoc.latitude
+                        longitude = currentLoc.longitude
+                    }
+
+                    val endLocation = Location("end").apply {
+                        latitude = destination.latitude
+                        longitude = destination.longitude
+                    }
+
+                    // Calculate the distance in meters
+                    val distance = startLocation.distanceTo(endLocation)
+
+                    binding.includednavi.placename.text = placename
+                    val formattedDistance = String.format("%.2f", distance)
+                    binding.includednavi.dis.text = "$formattedDistance meters"
+
+                    // Display the distance in your app (e.g., via Toast)
+                    binding.includednavi.navcard.visibility = View.VISIBLE
+
+                } else {
+                    binding.includednavi.naviButton.text = "Find Route"
+                    // Button is unchecked: Call clearPreviousPolylines
+                    binding.includednavi.navcard.visibility = View.GONE
+                    clearPreviousPolylines()
+                }
+            }
+        }
+
+        // This part is for  bottomsheet for the menu
+        binding.accountButton.setOnClickListener {
+            if (!isBottomSheetOpen) {
+                bottomSheet_menu();
+                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+            }
+        }
+
+        // This part is for bottomsheet for the activities
+        val bottommenu = binding.bottommenu
+        bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
+            if (ischecked) {
+                binding.navibutton.visibility = View.GONE
+                binding.includednavi.navi.clearChecked()
+                when (checkid) {
+                    R.id.act -> {bottomSheet_activities()}
+                    R.id.weather -> {bottomSheet_weather()}
+                    R.id.alerts -> {bottomSheet_alert()}
+                }
+            }
+            else {
+                when (checkid) {
+                    R.id.act -> {
+                        val bottomSheet = binding.activites
+                        // Get BottomSheetBehavior from the FrameLayout
+                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+                        // Set or change peekHeight
+                        bottomSheetBehavior.peekHeight = 0
+                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }
+
+                    R.id.weather -> {
+                        val bottomSheet = binding.bottomWeather
+                        // Get BottomSheetBehavior from the FrameLayout
+                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+                        weatherBottomSheetBehavior?.peekHeight = 0
+                        weatherBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }
+
+                    R.id.alerts -> {
+                        val bottomSheet = binding.bottomAlert
+                        // Get BottomSheetBehavior from the FrameLayout
+                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+                        alertBottomSheetBehavior?.peekHeight = 0
+                        alertBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }
+                }
+            }
+
+        }
+
+
+        // This part is for recycler View of suggestions
+        recyclerView = binding.suggestionRecyclerViewer
+        suggestionAdapter = SuggestionAdapter(this, this)
+        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.adapter = suggestionAdapter
+
+        //This part is of Ideal Activity
+
+        val bottomSheet = binding.activites
+
+        val recyclerView: RecyclerView? = bottomSheet.findViewById(R.id.ideal_activities);
+        val Idealactivities =
+            mutableListOf("Jet Skiing", "Banana Boat Ride", "Speed Boat Ride", "Kayaking")
+
+
+        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this);
+        recyclerView?.layoutManager =
+            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
+        recyclerView?.adapter = IdealActivitiesAdaptor
+
+//    Other activites
+
+        val recyclerView1: RecyclerView? = bottomSheet.findViewById(R.id.other_activites);
+        val otheractivites =
+            mutableListOf(
+                "Beach volleyball",
+                "Go Karting",
+                "Seafood",
+                "Kannagi Statue",
+                "Flying kites",
+                "horse Riding",
+                "Savor Delicious Snack",
+                "Sun bath"
+            )
+
+        OtherActivitiesAdaptor = ActivitiesAdaptor(otheractivites, this);
+        recyclerView1?.layoutManager =
+            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
+        recyclerView1?.adapter = OtherActivitiesAdaptor
+
+//Prohibited
+
+        val recyclerView2: RecyclerView? = bottomSheet.findViewById(R.id.prohibited_activites)
+        val prohibitedActivities = mutableListOf("Bathing", "Surfing", "Swimming", "???", "???", "???", "???", "???")
+
+        ProhibitedActivitiesAdaptor =
+            ProhibitedActivites(prohibitedActivities) // Properly initialize the adapter
+        recyclerView2?.layoutManager = LinearLayoutManager(this)
+        recyclerView2?.adapter = ProhibitedActivitiesAdaptor
+
+    }
 
 
     // Functions for Recycler
@@ -171,7 +347,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     // Functions for Map
     private fun searchBeaches(Beaches: MutableList<Beach>) {
-
         binding.search.setIconified(true)
         binding.search.isFocusable = false
         binding.search.clearFocus()
@@ -189,6 +364,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
 
     }
+
     private fun createPolygonsFromAnArray(beaches: List<Beach>) {
         for (beach in beaches) {
             val polygonOptions = PolygonOptions()
@@ -209,7 +385,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-
     private fun moveCameraFromAnArray(Beaches:List<Beach>){
         if(Beaches.size == 1){
             val newCameraPosition = CameraPosition(LatLng(Beaches[0].latitude, Beaches[0].longitude), 16.0F, 0F, 0F)
@@ -224,6 +399,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun moveCameraToDefaultPosition(){
         mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(21.0490, 79.2824), 4.0f))
     }
+
     private fun createMarkersFromAnArray(Beaches:List<Beach>){
         var beachLatLng : LatLng
         for(beach in Beaches){
@@ -241,7 +417,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-
     private fun updateSearchTitle(Beaches: MutableList<Beach>){
         Log.d("In updateSearchTitle", "Changing Search results text to ${Beaches.size}")
         var resultString = "Found ${Beaches.size} beaches"
@@ -250,7 +425,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         else if(Beaches.size == 0){resultString = "Found no beach"}
         binding.includesearch.RecentSearchesTextView.text = resultString
     }
-
 
     private fun clearMarkersFromAnArray() {
         for (markerObj in mapMarkers_Objects){
@@ -261,6 +435,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         mapMarkers_Objects = mutableListOf(MarkerOptions())
     }
 
+
+    // Functions for Search Bar
     private fun initBeachesTrie(){
         beachTrie = Trie()
         for(beach in AllBeachesList){
@@ -345,7 +521,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         })
     }
 
-
     private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
         val adapter = BeachRecyclerView.adapter as BeachAdapter
 
@@ -358,10 +533,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
     }
-
-
-
-
 
     private fun getBeachIdsFromNames(viableNames: List<String>): List<Int> {
         val viableBeaches = mutableListOf<Beach>()
@@ -380,182 +551,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
 
-
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        mapMarkers_Objects = mutableListOf()
-
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-//        This part is for map initializtion
-        val mapFragment =
-            supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-
-        initSearchButton()
-        initBeachesRecycler()
-        initBeachesTrie()
-
-
-        binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            // Check if the specific button is toggled
-            if (checkedId == binding.includednavi.naviButton.id) {
-                if (isChecked) {
-                    // Button is checked: Call drawRoute
-                    drawRoute(currentLoc, destination)
-                    binding.includednavi.naviButton.text = "Cancel"
-
-                    val startLocation = Location("start").apply {
-                        latitude = currentLoc.latitude
-                        longitude = currentLoc.longitude
-                    }
-
-                    val endLocation = Location("end").apply {
-                        latitude = destination.latitude
-                        longitude = destination.longitude
-                    }
-
-                    // Calculate the distance in meters
-                    val distance = startLocation.distanceTo(endLocation)
-
-                    binding.includednavi.placename.text = placename
-                    val formattedDistance = String.format("%.2f", distance)
-                    binding.includednavi.dis.text = "$formattedDistance meters"
-
-                    // Display the distance in your app (e.g., via Toast)
-                    binding.includednavi.navcard.visibility = View.VISIBLE
-
-                } else {
-                    binding.includednavi.naviButton.text = "Find Route"
-                    // Button is unchecked: Call clearPreviousPolylines
-                    binding.includednavi.navcard.visibility = View.GONE
-                    clearPreviousPolylines()
-                }
-            }
-        }
-
-
-
-
-
-//        This part is for  bottomsheet for the menu
-        binding.acc.setOnClickListener {
-            if (!isBottomSheetOpen) {
-                bottomSheet_menu();
-                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
-            }
-        }
-
-//        This part is for bottomsheet for the activities
-        val bottommenu = binding.bottommenu
-        bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
-            if (ischecked) {
-                binding.navibutton.visibility = View.GONE
-                binding.includednavi.navi.clearChecked()
-                when (checkid) {
-                    R.id.act -> {
-                        bottomSheet_activities()
-
-                    };
-                    R.id.weather -> {
-                        bottomSheet_weather()
-                    }
-
-                    R.id.alerts -> {
-
-                        bottomSheet_alert()
-                    }
-                }
-            } else {
-                when (checkid) {
-                    R.id.act -> {
-                        val bottomSheet = binding.activites
-
-                        // Get BottomSheetBehavior from the FrameLayout
-                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-                        // Set or change peekHeight
-                        bottomSheetBehavior.peekHeight = 0
-                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-
-                    }
-
-                    R.id.weather -> {
-                        weatherBottomSheetBehavior?.peekHeight = 0
-                        weatherBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    }
-
-                    R.id.alerts -> {
-                        alertBottomSheetBehavior?.peekHeight = 0
-                        alertBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    }
-                }
-            }
-
-        }
-
-
-//This part is for recycler View of suggestions
-        recyclerView = binding.suggestionRecyclerViewer
-        suggestionAdapter = SuggestionAdapter(this, this)
-        recyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.adapter = suggestionAdapter
-
-        //This part is of Ideal Activity
-
-        val bottomSheet = binding.activites
-
-        val recyclerView: RecyclerView? = bottomSheet.findViewById(R.id.ideal_activities);
-        val Idealactivities =
-            mutableListOf("Jet Skiing", "Banana Boat Ride", "Speed Boat Ride", "Kayaking")
-
-
-        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this);
-        recyclerView?.layoutManager =
-            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
-        recyclerView?.adapter = IdealActivitiesAdaptor
-
-//    Other activites
-
-        val recyclerView1: RecyclerView? = bottomSheet.findViewById(R.id.other_activites);
-        val otheractivites =
-            mutableListOf(
-                "Beach volleyball",
-                "Go Karting",
-                "Seafood",
-                "Kannagi Statue",
-                "Flying kites",
-                "horse Riding",
-                "Savor Delicious Snack",
-                "Sun bath"
-            )
-
-        OtherActivitiesAdaptor = ActivitiesAdaptor(otheractivites, this);
-        recyclerView1?.layoutManager =
-            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
-        recyclerView1?.adapter = OtherActivitiesAdaptor
-
-//Prohibited
-
-        val recyclerView2: RecyclerView? = bottomSheet.findViewById(R.id.prohibited_activites)
-        val prohibitedActivities = mutableListOf("Bathing", "Surfing", "Swimming")
-
-        ProhibitedActivitiesAdaptor =
-            ProhibitedActivites(prohibitedActivities) // Properly initialize the adapter
-        recyclerView2?.layoutManager = LinearLayoutManager(this)
-        recyclerView2?.adapter = ProhibitedActivitiesAdaptor
-
-    }
-
-    //This function is for map initilization
+    // Functions for maps
     override fun onMapReady(p0: GoogleMap) {
         mGoogleMap = p0
         checkLocationPermission()
@@ -576,16 +572,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
-
     private fun navigation(markercord: LatLng , title : String?) {
         placename = title
         binding.navibutton.visibility = View.VISIBLE
         binding.includednavi.navi.clearChecked()
         destination = markercord
-
     }
 
-//Navigation to a point
     private fun drawRoute(currentLoc: LatLng, destination: LatLng) {
         // Clear existing polylines if needed (optional)
         clearPreviousPolylines()
@@ -612,43 +605,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         polylines.clear()
     }
 
-
-
-
-
-
-
-
-    // Function to find the route from current location to the selected marker and draw it
-//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
-        // Use the Directions API to get the route between origin and destination
-//        val path: MutableList<List<LatLng>> = ArrayList()
-//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
-//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
-//                response ->
-//            val jsonResponse = JSONObject(response)
-//            // Get routes
-//            val routes = jsonResponse.getJSONArray("routes")
-//            val legs = routes.getJSONObject(0).getJSONArray("legs")
-//            val steps = legs.getJSONObject(0).getJSONArray("steps")
-//            for (i in 0 until steps.length()) {
-//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
-//                path.add(PolyUtil.decode(points))
-//            }
-//            for (i in 0 until path.size) {
-//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
-//            }
-//        }, Response.ErrorListener {
-//                _ ->
-//        }){}
-//        val requestQueue = Volley.newRequestQueue(this)
-//        requestQueue.add(directionsRequest)
-
-//    }
-
-
-
-    //This is for user locaton
     private fun checkLocationPermission() {
         // Check for the fine location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -698,11 +654,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         )
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionCode) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -713,9 +665,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    // Function to find the route from current location to the selected marker and draw it
+//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
+    // Use the Directions API to get the route between origin and destination
+//        val path: MutableList<List<LatLng>> = ArrayList()
+//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
+//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
+//                response ->
+//            val jsonResponse = JSONObject(response)
+//            // Get routes
+//            val routes = jsonResponse.getJSONArray("routes")
+//            val legs = routes.getJSONObject(0).getJSONArray("legs")
+//            val steps = legs.getJSONObject(0).getJSONArray("steps")
+//            for (i in 0 until steps.length()) {
+//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+//                path.add(PolyUtil.decode(points))
+//            }
+//            for (i in 0 until path.size) {
+//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
+//            }
+//        }, Response.ErrorListener {
+//                _ ->
+//        }){}
+//        val requestQueue = Volley.newRequestQueue(this)
+//        requestQueue.add(directionsRequest)
+
+//    }
+
 
     //    This function is for bottom sheet for menu
-
     private fun saveToggleState(buttonId: Int, isChecked: Boolean) {
         val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
         sharedPreferences.edit().putBoolean(buttonId.toString(), isChecked).apply()
@@ -729,7 +707,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         ) // Default to unchecked if not saved
     }
-
 
     private fun bottomSheet_menu() {
         val bottomSheetDialog = BottomSheetDialog(this)
@@ -779,7 +756,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         bottomSheetDialog.show()
 
-
         bottomSheetDialog.setOnDismissListener {
             isBottomSheetOpen = false // Optional: reset your custom flag if needed
         }
@@ -790,33 +766,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //    Bottomsheet for activites
     private fun bottomSheet_activities() {
-        val bottomSheet = binding.activites
+        Log.d("bottomSheet", "Opened Activities")
 
         // Get BottomSheetBehavior from the FrameLayout
+        val bottomSheet = binding.activites
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+
         // Set or change peekHeight
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         bottomSheetBehavior.peekHeight = 200
-
-
     }
 
-//Bottomsheet for weather
-
+    //Bottomsheet for weather
     private fun bottomSheet_weather() {
+        Log.d("bottomSheet", "Opened Weather")
+
         val bottomSheet = binding.bottomWeather
         weatherBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        weatherBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
         weatherBottomSheetBehavior?.peekHeight = 200
-
-
     }
-//    Bottomsheet for alert
 
+    //    Bottomsheet for alert
     private fun bottomSheet_alert() {
+        Log.d("bottomSheet", "Opened Alerts")
+
         val bottomSheet = binding.bottomAlert
         alertBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        alertBottomSheetBehavior?.peekHeight = 200
 
+        alertBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        alertBottomSheetBehavior?.peekHeight = 200
     }
 
 
@@ -996,7 +976,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             Toast.makeText(this, "$activity unselected", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     // Step 4: Method to add/remove markers on the map
     private fun updateMarkers(isChecked: Boolean, category: String) {
@@ -1244,9 +1223,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         markersMap[category]?.forEach { it.remove() }
         markersMap.remove(category)
     }
-
-
 }
-
-
-

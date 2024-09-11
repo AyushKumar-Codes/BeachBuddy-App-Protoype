@@ -3,163 +3,198 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
     >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         android:fitsSystemWindows="true"
         tools:context=".MainActivity"
-
         >
-
-        <!--Search Bar-->
-
 
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/mapfragment"
             class="com.google.android.gms.maps.SupportMapFragment"
+
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
+        />
 
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
-            android:layout_width="370dp"
-            android:layout_height="60dp"
+
+            android:layout_width="300dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="16dp"
+
             app:cardCornerRadius="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.487"
+
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toTopOf="@id/main"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/mapfragment"
-            app:layout_constraintVertical_bias="0.018">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cardView_ConstraintLayout"
+
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                >
 
                 <ImageView
                     android:id="@+id/imageView"
-                    android:layout_width="50dp"
-                    android:layout_height="match_parent"
+
+                    android:layout_width="40sp"
+                    android:layout_height="40sp"
                     android:elevation="100dp"
+
                     android:paddingLeft="5dp"
+                    android:layout_marginLeft="3dp"
 
                     android:src="@drawable/searchico"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+
+                    app:layout_constraintVertical_bias="0.5"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+
+                />
 
 
                 <SearchView
                     android:id="@+id/search"
+
                     android:layout_width="313dp"
                     android:layout_height="57dp"
-                    android:layout_gravity="center_vertical"
+
                     android:background="@null"
                     android:backgroundTint="@android:color/transparent"
+
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:iconifiedByDefault="false"
+
                     android:inputType="text"
-                    android:queryHint="Search here"
+                    android:queryHint="Explore Beaches"
+
                     android:textCursorDrawable="@null"
                     app:closeIcon="@null"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/acc"
-                    app:layout_constraintStart_toStartOf="parent"
+
+                    app:layout_constraintStart_toStartOf="@id/cardView_ConstraintLayout"
                     app:layout_constraintTop_toTopOf="parent"
+
+
                     app:queryBackground="@null"
                     app:searchIcon="@null" />
 
                 <ImageView
-                    android:id="@+id/acc"
+                    android:id="@+id/accountButton"
+
                     android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="4dp"
-                    android:paddingRight="5dp"
+                    android:layout_height="30sp"
+
+                    android:layout_marginRight="4dp"
+
                     android:src="@drawable/acc"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    tools:layout_editor_absoluteY="0dp" />
+
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.cardview.widget.CardView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/suggestionRecyclerViewer"
-            android:visibility="gone"
-            android:layout_width="379dp"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintEnd_toEndOf="@+id/cardView"
-            app:layout_constraintHorizontal_bias="0.444"
-            app:layout_constraintStart_toStartOf="@+id/cardView"
-            app:layout_constraintTop_toBottomOf="@+id/cardView" />
+            android:visibility="visible"
 
+            android:layout_width="0dp"
+            android:layout_height="40dp"
 
+            android:layout_marginTop="8sp"
 
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintVertical_bias="0.0"
+
+            app:layout_constraintRight_toRightOf="@id/main"
+            app:layout_constraintLeft_toLeftOf="@id/main"
+            app:layout_constraintTop_toBottomOf="@id/cardView"/>
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/coordinatorLayout"
+
             android:layout_width="match_parent"
-            android:layout_height="661dp"
+            android:layout_height="0dp"
+
             android:elevation="100dp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/menu"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/suggestionRecyclerViewer"
 
-            app:layout_constraintVertical_bias="1.0">
+            app:layout_constraintVertical_bias="0.0"
+
+            app:layout_constraintTop_toBottomOf="@id/suggestionRecyclerViewer"
+            app:layout_constraintBottom_toTopOf="@id/menu"
+            app:layout_constraintLeft_toLeftOf="parent"
+            >
 
             <FrameLayout
                 android:id="@+id/activites"
                 style="?attr/bottomSheetStyle"
+
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+
                 android:background="@drawable/bottomsheet"
                 android:elevation="100dp"
-                app:behavior_peekHeight="0dp"
-                app:layout_anchor="@+id/activites"
-                app:layout_anchorGravity="center"
-                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-                <include layout="@layout/beach_activities" />
+                app:behavior_peekHeight="0dp"
+                app:layout_anchor="@id/activites"
+                app:layout_anchorGravity="center"
+
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+                <include layout="@layout/beach_activities"/>
             </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/bottom_weather"
                 style="?attr/bottomSheetStyle"
+
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+
                 android:background="@drawable/bottomsheet"
                 android:elevation="100dp"
-                app:behavior_peekHeight="0dp"
-                app:layout_anchor="@+id/bottom_weather"
-                app:layout_anchorGravity="center"
-                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
+                app:behavior_peekHeight="0dp"
+                app:layout_anchor="@id/bottom_weather"
+                app:layout_anchorGravity="center"
+
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
                 <include layout="@layout/weather" />
             </FrameLayout>
-
 
             <FrameLayout
                 android:id="@+id/bottom_Alert"
                 style="?attr/bottomSheetStyle"
+
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+
                 android:background="@drawable/bottomsheet"
                 android:elevation="100dp"
+
                 app:behavior_peekHeight="0dp"
-                app:layout_anchor="@+id/bottom_Alert"
+
+                app:layout_anchor="@id/bottom_Alert"
                 app:layout_anchorGravity="center"
+
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
                 <include layout="@layout/alert" />
@@ -168,13 +203,19 @@
             <FrameLayout
                 android:id="@+id/navibutton"
                 style="?attr/bottomSheetStyle"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+
                 android:background="@drawable/bottomsheet"
+
                 android:elevation="30dp"
+
                 android:visibility="gone"
+
                 app:behavior_peekHeight="0dp"
-                app:layout_anchor="@+id/bottom_Alert"
+
+                app:layout_anchor="@id/bottom_Alert"
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
@@ -187,82 +228,94 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/menu"
+
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="70dp"
+
+            android:visibility="visible"
+
             app:cardElevation="20dp"
-            android:visibility="gone"
+
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintVertical_bias="1.0"
+
+
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/mapfragment"
-            app:layout_constraintVertical_bias="1.0"
-            android:padding="0dp"
+            app:layout_constraintTop_toTopOf="@id/main"
             >
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/bottommenu"
+
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layout_constraintBottom_toBottomOf="@+id/mapfragment"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
+
+                android:background="@color/material_dynamic_tertiary99"
+
                 app:singleSelection="true"
-                app:layout_constraintTop_toBottomOf="@+id/suggestionRecyclerViewer"
+
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintVertical_bias="1.0"
-                android:layout_margin="0dp"
+
+                app:layout_constraintBottom_toBottomOf="@+id/main"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 >
 
 
                 <Button
                     android:id="@+id/act"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_margin="0dp"
+
                     android:layout_weight="1"
+
                     android:fontFamily="@font/belanosima_semibold"
                     android:text="Activities"
-                    android:textSize="15dp"
-                    app:cornerRadius="0dp"
+                    android:textSize="12dp"
+
                     app:icon="@drawable/act"
                     app:iconGravity="top"
-                    app:iconSize="50dp"
-                    tools:layout_editor_absoluteX="177dp"
-                    tools:layout_editor_absoluteY="401dp" />
+                    app:iconSize="35dp"/>
 
                 <Button
                     android:id="@+id/weather"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+
                     android:text="Weather"
                     android:fontFamily="@font/belanosima_semibold"
+                    android:textSize="12dp"
+
                     app:icon="@drawable/weather"
                     app:iconGravity="top"
-                    app:iconSize="50dp"
-                    android:textSize="15dp"
-                    app:cornerRadius="0dp"
-                    tools:layout_editor_absoluteX="188dp"
-                    tools:layout_editor_absoluteY="506dp" />
+                    app:iconSize="35dp"
+
+                    app:cornerRadius="0dp"/>
 
                 <Button
                     android:id="@+id/alerts"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+
                     android:text="Alerts"
                     android:fontFamily="@font/belanosima_semibold"
+
                     app:icon="@drawable/alert"
                     app:iconGravity="top"
-                    app:iconSize="50dp"
-                    android:textSize="15dp"
-                    app:cornerRadius="0dp"
-                    tools:layout_editor_absoluteX="198dp"
-                    tools:layout_editor_absoluteY="618dp" />
+                    app:iconSize="35dp"
+                    android:textSize="12dp"
+                />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -271,10 +324,12 @@
         <include
             android:id="@+id/includesearch"
             layout="@layout/activity_search"
+
             android:elevation="100dp"
+
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

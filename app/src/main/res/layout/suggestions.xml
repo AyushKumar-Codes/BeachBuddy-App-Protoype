@@ -2,21 +2,32 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
+
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="100dp"
+
     android:layout_marginEnd="10dp"
+
+    app:cardCornerRadius="100dp"
     >
 
     <ToggleButton
         android:id="@+id/toggleButton"
+
         android:layout_width="wrap_content"
-        android:layout_height="37dp"
+        android:layout_height="30dp"
+
+        android:paddingHorizontal="20dp"
+        android:padding="5dp"
+
         android:background="@drawable/toggle_button_shape"
+
         android:fontFamily="sans-serif-black"
-        android:paddingHorizontal="10dp"
+
         android:text="ToggleButton"
         android:textColor="#42414B"
+        android:textSize="10sp"
+
         android:textOff="Hotels"
         android:textOn="Hotel">
     </ToggleButton>
