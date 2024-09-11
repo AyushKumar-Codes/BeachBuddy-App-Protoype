@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".SearchActivity"
+
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/search_MainConstraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/TopConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:layout_constraintLeft_toLeftOf="@id/search_MainConstraintLayout"
+            app:layout_constraintTop_toTopOf="@id/search_MainConstraintLayout"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/RecyclerConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/TopConstraintLayout"
+            app:layout_constraintVertical_bias="0.0">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_tagsPanelRecylerView"
+                android:layout_width="match_parent"
+                android:layout_height="40sp"
+                android:layout_marginLeft="8sp"
+                android:layout_marginTop="4sp"
+                android:layout_marginRight="8sp"
+                android:layout_marginBottom="4sp"
+                android:orientation="horizontal"
+
+                app:layout_constraintLeft_toLeftOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintTop_toTopOf="@id/RecyclerConstraintLayout" />
+
+            <TextView
+                android:id="@+id/RecentSearchesTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8sp"
+                android:text="Recently Searched"
+                android:textColor="@color/material_dynamic_primary40"
+                android:textSize="24sp"
+                android:textStyle="bold"
+
+                app:layout_constraintLeft_toLeftOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintTop_toBottomOf="@+id/search_tagsPanelRecylerView" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/MainRecyclerView"
+                android:layout_width="350sp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8sp"
+
+                app:layout_constraintBottom_toBottomOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintLeft_toLeftOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/RecyclerConstraintLayout"
+                app:layout_constraintTop_toBottomOf="@id/RecentSearchesTextView"
+                app:layout_constraintVertical_bias="0" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

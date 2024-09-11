@@ -1,14 +1,15 @@
 package com.prototype.beach
-
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.SearchView
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -37,9 +38,14 @@ import com.prototype.beach.databinding.ActivityMainBinding
 import org.json.JSONObject
 import com.android.volley.Response
 import com.android.volley.Request
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
 
 import com.google.android.gms.maps.model.Polyline
-
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.prototype.beach.databinding.ActivitySearchBinding
+import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -63,16 +69,340 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val polylines = mutableListOf<Polyline>()
     lateinit var destination: LatLng
     private var placename:String? = null
+    private lateinit var mapMarkers_Objects: MutableList<MarkerOptions>
+    private lateinit var beachTrie:Trie
+
+
+    // Recycler for beaches
+    private lateinit var BeachRecyclerView: RecyclerView
+    private lateinit var BeachesList: MutableList<Beach>
+    // Data
+    private lateinit var AllBeachesList: MutableList<Beach>
+
+
+
+
+
+    // Functions for Recycler
+    private fun initBeachesRecycler(){
+        BeachesList = mutableListOf()
+        AllBeachesList = mutableListOf()
+
+        fun loadBeachesFromJson(){
+            val drawableMap = mapOf(
+                "beach_marina" to R.drawable.beach_marina,
+                "beach_payyambalam" to R.drawable.beach_payyambalam,
+                "beach_marie" to R.drawable.beach_marie,
+                "beach_shrivardhan" to R.drawable.beach_shrivardhan
+            )
+
+            fun getDrawableResourceIdFromString(drawableName: String): Int {
+                return drawableMap[drawableName] ?: R.drawable.question  // Default drawable resource
+            }
+
+            // Reading JSON file from resources
+            val jsonStream = assets.open("Beaches.json")
+            val reader = InputStreamReader(jsonStream)
+
+            // Parsing JSON data
+            val gson = Gson()
+            val beachType = object : TypeToken<List<BeachJson>>() {}.type
+            val beachJsonList: List<BeachJson> = gson.fromJson(reader, beachType)
+
+            // Create and populate Beach objects
+            for (beachJson in beachJsonList) {
+                val beach= Beach()
+                beach.id = beachJson.id
+                beach.name = beachJson.name
+                beach.imageName = beachJson.imageName
+                beach.imageID = getDrawableResourceIdFromString(beachJson.imageName)
+                beach.latitude = beachJson.latitude
+                beach.longitude = beachJson.longitude
+                beach.polygonCoordinates = beachJson.polygonCoordinates
+
+                Log.d("Entered beach", "id:${beach.id}\tname:${beach.name}")
+                AllBeachesList.add(beach)
+            }
+
+            Log.d("In loadBeachesFromJson","AllBeachesList.size = ${AllBeachesList.size}")
+        }
+
+        loadBeachesFromJson()
+
+        BeachRecyclerView = binding.includesearch.MainRecyclerView
+        BeachRecyclerView.layoutManager = LinearLayoutManager(this)
+        BeachRecyclerView.setHasFixedSize(false)
+
+
+        BeachRecyclerView.adapter = BeachAdapter(BeachesList){ selectedBeach ->
+
+            Log.d("testing", "Selected Beach: ${selectedBeach.name}")
+            BeachesList = mutableListOf(selectedBeach)
+            showSuggestions(false)
+            searchBeaches(BeachesList)
+
+        }
+    }
+
+    private fun showSuggestions(state: Boolean = true) {
+        if (state) {
+            binding.includesearch.RecyclerConstraintLayout.visibility = View.VISIBLE
+            binding.includesearch.RecyclerConstraintLayout.isClickable = true
+
+            binding.search.alpha = 1.0F
+
+            // Adjust alpha and clickability so map isn't obscured
+            binding.mapfragment.alpha = 0.1F
+            binding.mapfragment.isClickable = false
+
+            return
+        }
+
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.INVISIBLE
+        binding.includesearch.RecyclerConstraintLayout.isClickable = false
+
+        binding.search.alpha = 0.8F
+
+        binding.mapfragment.alpha = 1.0F
+        binding.mapfragment.isClickable = true
+    }
+
+
+
+    // Functions for Map
+    private fun searchBeaches(Beaches: MutableList<Beach>) {
+
+        binding.search.setIconified(true)
+        binding.search.isFocusable = false
+        binding.search.clearFocus()
+        updateSearchTitle(Beaches)
+        binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+
+        clearMarkersFromAnArray()
+        createMarkersFromAnArray(Beaches)
+         createPolygonsFromAnArray(Beaches)
+        showSuggestions(false)
+
+        moveCameraFromAnArray(Beaches)
+        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
+        binding.menu.visibility = View.VISIBLE
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
+
+    }
+    private fun createPolygonsFromAnArray(beaches: List<Beach>) {
+        for (beach in beaches) {
+            val polygonOptions = PolygonOptions()
+
+                .fillColor(Color.argb(108,227, 255, 255)) // Semi-transparent fill color (ARGB format)
+                .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
+                .strokeWidth(5f)
+
+            for (coord in beach.polygonCoordinates) {
+                // Assume coord[0] is longitude and coord[1] is latitude
+                val latLng = LatLng(coord[1], coord[0]) // Correct order for LatLng
+                polygonOptions.add(latLng)
+            }
+
+            mGoogleMap!!.addPolygon(polygonOptions)
+
+            Log.d("Polygon Addition", "Added polygon for ${beach.name}")
+        }
+    }
+
+
+    private fun moveCameraFromAnArray(Beaches:List<Beach>){
+        if(Beaches.size == 1){
+            val newCameraPosition = CameraPosition(LatLng(Beaches[0].latitude, Beaches[0].longitude), 16.0F, 0F, 0F)
+            CameraUpdateFactory.newCameraPosition(newCameraPosition)
+            mGoogleMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition))
+        }
+        else{
+            moveCameraToDefaultPosition()
+        }
+    }
+
+    private fun moveCameraToDefaultPosition(){
+        mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(21.0490, 79.2824), 4.0f))
+    }
+    private fun createMarkersFromAnArray(Beaches:List<Beach>){
+        var beachLatLng : LatLng
+        for(beach in Beaches){
+            beachLatLng = LatLng(beach.latitude, beach.longitude)
+
+            val markerOptions = MarkerOptions()
+            markerOptions.title(beach.name)
+            markerOptions.position(beachLatLng)
+
+            mapMarkers_Objects.add(MarkerOptions().position(beachLatLng).title(beach.name))
+
+            mGoogleMap!!.addMarker(mapMarkers_Objects[mapMarkers_Objects.lastIndex])
+
+            Log.d("Marker Addition", "Added ${markerOptions.title} at ${markerOptions.position.latitude}, ${markerOptions.position.longitude}")    // #Debugger
+        }
+    }
+
+
+    private fun updateSearchTitle(Beaches: MutableList<Beach>){
+        Log.d("In updateSearchTitle", "Changing Search results text to ${Beaches.size}")
+        var resultString = "Found ${Beaches.size} beaches"
+        if(Beaches.size == 1){resultString = "Found ${Beaches.size} beach"}
+        else if(Beaches.size == 0 && binding.search.query.isEmpty()){resultString = "Explore Beaches"}
+        else if(Beaches.size == 0){resultString = "Found no beach"}
+        binding.includesearch.RecentSearchesTextView.text = resultString
+    }
+
+
+    private fun clearMarkersFromAnArray() {
+        for (markerObj in mapMarkers_Objects){
+            Log.d("Marker Deletion", "Deleted ${markerObj.title}")    // #Debugger
+            markerObj.visible(false)
+            mGoogleMap!!.clear()
+        }
+        mapMarkers_Objects = mutableListOf(MarkerOptions())
+    }
+
+    private fun initBeachesTrie(){
+        beachTrie = Trie()
+        for(beach in AllBeachesList){
+            beachTrie.insert(beach.name)
+
+            Log.d("initBeachTrie", "Added ${beach.name} as beachTrie")  // #Debugging
+        }
+    }
+
+    private fun initSearchButton(){
+
+
+
+        // on opening the search bar
+        binding.search.setOnSearchClickListener {
+
+            showSuggestions()
+        }
+
+        // on closing the search bar
+        binding.search.setOnCloseListener {
+
+            showSuggestions(false)
+            clearMarkersFromAnArray()
+            false  // Return false if you want the default behavior to still occur
+        }
+
+
+        // on changing the text of the query
+        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            fun computeSuggestions(newText:String?) : MutableList<Beach>{
+                binding.suggestionRecyclerViewer.visibility = View.GONE
+                if(newText.isNullOrEmpty()){
+                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
+                    return mutableListOf()
+
+                }
+
+                val viableBeaches : MutableList<Beach>
+
+                val viableNames = beachTrie.searchByPrefix(newText)  // Search for viable names using Trie
+                for (viableName in viableNames) Log.d("computeSuggestions","Viable name: ${viableName}")  // #Debuggin
+
+                val viableBeachesID = getBeachIdsFromNames(viableNames)  // Get beach IDs based on the names
+                for (viableBeach in viableBeachesID) Log.d("computeSuggestions","Viable beach id: ${viableBeach}")  // #Debuggin
+
+                viableBeaches = viableBeachesID.map { beachId ->
+                    AllBeachesList.find { it.id == beachId }?: Beach()  // Find full beach object by ID
+                }.toMutableList()
+
+                updateSuggestionsUI(viableBeaches)
+                return viableBeaches
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Handle search action
+                if(query.isNullOrEmpty()) {
+                    Log.d("Query Status", "Query is empty") // #Debugging
+                    return true
+                }
+
+                Log.d("Query Status Submit", "Query is not empty") // #Debugging
+                Log.d("Query Status", "Character count: ${query.length}") // #Debugging
+                Log.d("Query Status", "String: ${query}") // #Debugging
+
+
+                searchBeaches(computeSuggestions(query))
+
+                binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val characterCount = newText?.length ?: 0
+                Log.d("onQueryTextChange", "Character count: ${characterCount}")
+                Log.d("onQueryTextChange", "Word changed to: ${newText}")
+
+                showSuggestions(true)
+                updateSearchTitle(computeSuggestions(newText))
+                return false
+            }
+        })
+    }
+
+
+    private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
+        val adapter = BeachRecyclerView.adapter as BeachAdapter
+
+
+        Log.d("In updateSuggestionsUI","BeachesList (before setFilteredList()): ${matchingBeaches.size}")
+        adapter.setFilteredList(matchingBeaches)
+
+        for(beach in matchingBeaches){
+            Log.d("In updateSuggestionsUI","Matched Name: ${beach.name}")
+        }
+        Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
+    }
+
+
+
+
+
+    private fun getBeachIdsFromNames(viableNames: List<String>): List<Int> {
+        val viableBeaches = mutableListOf<Beach>()
+
+        // Iterate through each name in viableNames and find matching beaches
+        Log.d("getBeachIdsFromNames", "viableNames.size = ${viableNames.size}")
+        for (name in viableNames) {
+            val matchedBeach = AllBeachesList.find { it.name.equals(name, ignoreCase = true) }
+            if (matchedBeach != null) {
+                viableBeaches.add(matchedBeach)  // Add matching beach object to the viable list
+            }
+        }
+
+        // Return the list of IDs of the matched beaches
+        return viableBeaches.map { it.id }
+    }
+
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        mapMarkers_Objects = mutableListOf()
+
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 //        This part is for map initializtion
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+
+        initSearchButton()
+        initBeachesRecycler()
+        initBeachesTrie()
 
 
         binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -245,6 +575,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
     }
+
 
     private fun navigation(markercord: LatLng , title : String?) {
         placename = title
