@@ -50,39 +50,47 @@ import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback,
-    SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
-    private var mGoogleMap: GoogleMap? = null
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
+    // for viewbinding
     lateinit var binding: ActivityMainBinding
-    private var isBottomSheetOpen = false
-    private var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var suggestionAdapter: SuggestionAdapter
+
+    // for maps
+    private var mGoogleMap: GoogleMap? = null
     private val markersMap: MutableMap<String, MutableList<Marker>> = mutableMapOf()
     private val activityPolygons: MutableMap<String, Polygon> = mutableMapOf()
-    private lateinit var IdealActivitiesAdaptor: ActivitiesAdaptor
-    private lateinit var OtherActivitiesAdaptor: ActivitiesAdaptor
-    private lateinit var ProhibitedActivitiesAdaptor: ProhibitedActivites
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val locationPermissionCode = 101
     private lateinit var currentLoc: LatLng
     private val polylines = mutableListOf<Polyline>()
     lateinit var destination: LatLng
-    private var placename:String? = null
     private lateinit var mapMarkers_Objects: MutableList<MarkerOptions>
-    private lateinit var beachTrie:Trie
+    private var placename:String? = null
 
+    // for bottom sheets
+    private var isBottomSheetOpen = false
+    private var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    private var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+
+    // for the recycler
+    private lateinit var recyclerView: RecyclerView
+
+    // for the adapters
+    private lateinit var suggestionAdapter: SuggestionAdapter
+    private lateinit var IdealActivitiesAdaptor: ActivitiesAdaptor
+    private lateinit var OtherActivitiesAdaptor: ActivitiesAdaptor
+    private lateinit var ProhibitedActivitiesAdaptor: ProhibitedActivites
 
     // Recycler for beaches
     private lateinit var BeachRecyclerView: RecyclerView
     private lateinit var BeachesList: MutableList<Beach>
+    private lateinit var beachTrie:Trie
+
     // Data
     private lateinit var AllBeachesList: MutableList<Beach>
 
 
-//    Icons
+    // for icons
     private lateinit var hotelIcon: Bitmap
     private lateinit var hospitalIcon: Bitmap
     private lateinit var swimmingIcon: Bitmap
@@ -105,302 +113,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var sunbathIcon: Bitmap
     private lateinit var beachIcon: Bitmap
 
-    // Functions for Recycler
-    private fun initBeachesRecycler(){
-        BeachesList = mutableListOf()
-        AllBeachesList = mutableListOf()
-
-        fun loadBeachesFromJson(){
-            val drawableMap = mapOf(
-                "beach_marina" to R.drawable.beach_marina,
-                "beach_corbyn" to R.drawable.beach_corbyn,
-                "beach_kovalam" to R.drawable.beach_kovalam,
-                "beach_calangute" to R.drawable.beach_calangute,
-                "beach_marari" to R.drawable.beach_marari,
-            )
-
-            fun getDrawableResourceIdFromString(drawableName: String): Int {
-                return drawableMap[drawableName] ?: R.drawable.question  // Default drawable resource
-            }
-
-            // Reading JSON file from resources
-            val jsonStream = assets.open("Beaches.json")
-            val reader = InputStreamReader(jsonStream)
-
-            // Parsing JSON data
-            val gson = Gson()
-            val beachType = object : TypeToken<List<BeachJson>>() {}.type
-            val beachJsonList: List<BeachJson> = gson.fromJson(reader, beachType)
-
-            // Create and populate Beach objects
-            for (beachJson in beachJsonList) {
-                val beach= Beach()
-                beach.id = beachJson.id
-                beach.name = beachJson.name
-                beach.imageName = beachJson.imageName
-                beach.imageID = getDrawableResourceIdFromString(beachJson.imageName)
-                beach.latitude = beachJson.latitude
-                beach.longitude = beachJson.longitude
-                beach.polygonCoordinates = beachJson.polygonCoordinates
-
-                Log.d("Entered beach", "id:${beach.id}\tname:${beach.name}")
-                AllBeachesList.add(beach)
-            }
-
-            Log.d("In loadBeachesFromJson","AllBeachesList.size = ${AllBeachesList.size}")
-        }
-
-        loadBeachesFromJson()
-
-        BeachRecyclerView = binding.includesearch.MainRecyclerView
-        BeachRecyclerView.layoutManager = LinearLayoutManager(this)
-        BeachRecyclerView.setHasFixedSize(false)
-
-
-        BeachRecyclerView.adapter = BeachAdapter(BeachesList){ selectedBeach ->
-
-            Log.d("testing", "Selected Beach: ${selectedBeach.name}")
-            BeachesList = mutableListOf(selectedBeach)
-            showSuggestions(false)
-            searchBeaches(BeachesList)
-
-        }
-    }
-
-    private fun showSuggestions(state: Boolean = true) {
-        if (state) {
-            binding.includesearch.RecyclerConstraintLayout.visibility = View.VISIBLE
-            binding.includesearch.RecyclerConstraintLayout.isClickable = true
-
-            binding.search.alpha = 1.0F
-
-            // Adjust alpha and clickability so map isn't obscured
-            binding.mapfragment.alpha = 0.1F
-            binding.mapfragment.isClickable = false
-
-            return
-        }
-
-        binding.includesearch.RecyclerConstraintLayout.visibility = View.INVISIBLE
-        binding.includesearch.RecyclerConstraintLayout.isClickable = false
-
-        binding.search.alpha = 0.8F
-
-        binding.mapfragment.alpha = 1.0F
-        binding.mapfragment.isClickable = true
-    }
-
-
-
-    // Functions for Map
-    private fun searchBeaches(Beaches: MutableList<Beach>) {
-
-        binding.search.setIconified(true)
-        binding.search.isFocusable = false
-        binding.search.clearFocus()
-        updateSearchTitle(Beaches)
-        binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
-
-        clearMarkersFromAnArray()
-        createMarkersFromAnArray(Beaches)
-         createPolygonsFromAnArray(Beaches)
-        showSuggestions(false)
-
-        moveCameraFromAnArray(Beaches)
-        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
-        binding.menu.visibility = View.VISIBLE
-        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
-
-    }
-    private fun createPolygonsFromAnArray(beaches: List<Beach>) {
-        for (beach in beaches) {
-            val polygonOptions = PolygonOptions()
-
-                .fillColor(Color.argb(108,227, 255, 255)) // Semi-transparent fill color (ARGB format)
-                .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
-                .strokeWidth(5f)
-
-            for (coord in beach.polygonCoordinates) {
-                // Assume coord[0] is longitude and coord[1] is latitude
-                val latLng = LatLng(coord[1], coord[0]) // Correct order for LatLng
-                polygonOptions.add(latLng)
-            }
-
-            mGoogleMap!!.addPolygon(polygonOptions)
-
-            Log.d("Polygon Addition", "Added polygon for ${beach.name}")
-        }
-    }
-
-
-    private fun moveCameraFromAnArray(Beaches:List<Beach>){
-        if(Beaches.size == 1){
-            val newCameraPosition = CameraPosition(LatLng(Beaches[0].latitude, Beaches[0].longitude), 16.0F, 0F, 0F)
-            CameraUpdateFactory.newCameraPosition(newCameraPosition)
-            mGoogleMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition))
-        }
-        else{
-            moveCameraToDefaultPosition()
-        }
-    }
-
-    private fun moveCameraToDefaultPosition(){
-        mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(21.0490, 79.2824), 4.0f))
-    }
-    private fun createMarkersFromAnArray(Beaches:List<Beach>){
-        var beachLatLng : LatLng
-        for(beach in Beaches){
-            beachLatLng = LatLng(beach.latitude, beach.longitude)
-
-            val markerOptions = MarkerOptions()
-            markerOptions.title(beach.name)
-            markerOptions.position(beachLatLng)
-
-            mapMarkers_Objects.add(MarkerOptions().position(beachLatLng).title(beach.name).icon(BitmapDescriptorFactory.fromBitmap(beachIcon)))
-
-            mGoogleMap!!.addMarker(mapMarkers_Objects[mapMarkers_Objects.lastIndex])
-
-            Log.d("Marker Addition", "Added ${markerOptions.title} at ${markerOptions.position.latitude}, ${markerOptions.position.longitude}")    // #Debugger
-        }
-    }
-
-
-    private fun updateSearchTitle(Beaches: MutableList<Beach>){
-        Log.d("In updateSearchTitle", "Changing Search results text to ${Beaches.size}")
-        var resultString = "Found ${Beaches.size} beaches"
-        if(Beaches.size == 1){resultString = "Found ${Beaches.size} beach"}
-        else if(Beaches.size == 0 && binding.search.query.isEmpty()){resultString = "Explore Beaches"}
-        else if(Beaches.size == 0){resultString = "Found no beach"}
-        binding.includesearch.RecentSearchesTextView.text = resultString
-    }
-
-
-    private fun clearMarkersFromAnArray() {
-        for (markerObj in mapMarkers_Objects){
-            Log.d("Marker Deletion", "Deleted ${markerObj.title}")    // #Debugger
-            markerObj.visible(false)
-            mGoogleMap!!.clear()
-        }
-        mapMarkers_Objects = mutableListOf(MarkerOptions())
-    }
-
-    private fun initBeachesTrie(){
-        beachTrie = Trie()
-        for(beach in AllBeachesList){
-            beachTrie.insert(beach.name)
-
-            Log.d("initBeachTrie", "Added ${beach.name} as beachTrie")  // #Debugging
-        }
-    }
-
-    private fun initSearchButton(){
-
-
-
-        // on opening the search bar
-        binding.search.setOnSearchClickListener {
-
-            showSuggestions()
-        }
-
-        // on closing the search bar
-        binding.search.setOnCloseListener {
-
-            showSuggestions(false)
-            clearMarkersFromAnArray()
-            false  // Return false if you want the default behavior to still occur
-        }
-
-
-        // on changing the text of the query
-        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            fun computeSuggestions(newText:String?) : MutableList<Beach>{
-                binding.suggestionRecyclerViewer.visibility = View.GONE
-                if(newText.isNullOrEmpty()){
-                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
-                    return mutableListOf()
-
-                }
-
-                val viableBeaches : MutableList<Beach>
-
-                val viableNames = beachTrie.searchByPrefix(newText)  // Search for viable names using Trie
-                for (viableName in viableNames) Log.d("computeSuggestions","Viable name: ${viableName}")  // #Debuggin
-
-                val viableBeachesID = getBeachIdsFromNames(viableNames)  // Get beach IDs based on the names
-                for (viableBeach in viableBeachesID) Log.d("computeSuggestions","Viable beach id: ${viableBeach}")  // #Debuggin
-
-                viableBeaches = viableBeachesID.map { beachId ->
-                    AllBeachesList.find { it.id == beachId }?: Beach()  // Find full beach object by ID
-                }.toMutableList()
-
-                updateSuggestionsUI(viableBeaches)
-                return viableBeaches
-            }
-
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query.isNullOrEmpty()) {
-                    Log.d("Query Status", "Query is empty")
-                    return true
-                }
-
-                // Perform the search in a background coroutine
-                CoroutineScope(Dispatchers.Main + Job()).launch {
-                    val suggestions = withContext(Dispatchers.IO) {
-                        computeSuggestions(query)
-                    }
-                    searchBeaches(suggestions)
-                }
-
-                binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                val characterCount = newText?.length ?: 0
-                Log.d("onQueryTextChange", "Character count: ${characterCount}")
-                Log.d("onQueryTextChange", "Word changed to: ${newText}")
-
-                showSuggestions(true)
-                updateSearchTitle(computeSuggestions(newText))
-                return false
-            }
-        })
-    }
-
-
-    private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
-        val adapter = BeachRecyclerView.adapter as BeachAdapter
-
-
-        Log.d("In updateSuggestionsUI","BeachesList (before setFilteredList()): ${matchingBeaches.size}")
-        adapter.setFilteredList(matchingBeaches)
-
-        for(beach in matchingBeaches){
-            Log.d("In updateSuggestionsUI","Matched Name: ${beach.name}")
-        }
-        Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
-    }
-
-
-
-
-
-    private fun getBeachIdsFromNames(viableNames: List<String>): List<Int> {
-        val viableBeaches = mutableListOf<Beach>()
-
-        // Iterate through each name in viableNames and find matching beaches
-        Log.d("getBeachIdsFromNames", "viableNames.size = ${viableNames.size}")
-        for (name in viableNames) {
-            val matchedBeach = AllBeachesList.find { it.name.equals(name, ignoreCase = true) }
-            if (matchedBeach != null) {
-                viableBeaches.add(matchedBeach)  // Add matching beach object to the viable list
-            }
-        }
-
-        // Return the list of IDs of the matched beaches
-        return viableBeaches.map { it.id }
-    }
 
 
 
@@ -610,7 +322,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.statue)
             statueIcon =   Bitmap.createScaledBitmap(originalIcon, 145, 180, false)
             originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.volleyball)
-             volleyballIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            volleyballIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
             originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.karting)
             kartingIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
             originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kite)
@@ -626,6 +338,116 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
     }
+
+
+
+
+    // Functions for Recycler
+    private fun initBeachesRecycler(){
+        BeachesList = mutableListOf()
+        AllBeachesList = mutableListOf()
+
+        fun loadBeachesFromJson(){
+            val drawableMap = mapOf(
+                "beach_marina" to R.drawable.beach_marina,
+                "beach_corbyn" to R.drawable.beach_corbyn,
+                "beach_kovalam" to R.drawable.beach_kovalam,
+                "beach_calangute" to R.drawable.beach_calangute,
+                "beach_marari" to R.drawable.beach_marari,
+            )
+
+            fun getDrawableResourceIdFromString(drawableName: String): Int {
+                return drawableMap[drawableName] ?: R.drawable.question  // Default drawable resource
+            }
+
+            // Reading JSON file from resources
+            val jsonStream = assets.open("Beaches.json")
+            val reader = InputStreamReader(jsonStream)
+
+            // Parsing JSON data
+            val gson = Gson()
+            val beachType = object : TypeToken<List<BeachJson>>() {}.type
+            val beachJsonList: List<BeachJson> = gson.fromJson(reader, beachType)
+
+            // Create and populate Beach objects
+            for (beachJson in beachJsonList) {
+                val beach= Beach()
+                beach.id = beachJson.id
+                beach.name = beachJson.name
+                beach.imageName = beachJson.imageName
+                beach.imageID = getDrawableResourceIdFromString(beachJson.imageName)
+                beach.latitude = beachJson.latitude
+                beach.longitude = beachJson.longitude
+                beach.polygonCoordinates = beachJson.polygonCoordinates
+
+                Log.d("Entered beach", "id:${beach.id}\tname:${beach.name}")
+                AllBeachesList.add(beach)
+            }
+
+            Log.d("In loadBeachesFromJson","AllBeachesList.size = ${AllBeachesList.size}")
+        }
+
+        loadBeachesFromJson()
+
+        BeachRecyclerView = binding.includesearch.MainRecyclerView
+        BeachRecyclerView.layoutManager = LinearLayoutManager(this)
+        BeachRecyclerView.setHasFixedSize(false)
+
+
+        BeachRecyclerView.adapter = BeachAdapter(BeachesList){ selectedBeach ->
+
+            Log.d("testing", "Selected Beach: ${selectedBeach.name}")
+            BeachesList = mutableListOf(selectedBeach)
+            showSuggestions(false)
+            searchBeaches(BeachesList)
+
+        }
+    }
+
+    private fun showSuggestions(state: Boolean = true) {
+        if (state) {
+            binding.includesearch.RecyclerConstraintLayout.visibility = View.VISIBLE
+            binding.includesearch.RecyclerConstraintLayout.isClickable = true
+
+            binding.search.alpha = 1.0F
+
+            // Adjust alpha and clickability so map isn't obscured
+            binding.mapfragment.alpha = 0.1F
+            binding.mapfragment.isClickable = false
+
+            return
+        }
+
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.INVISIBLE
+        binding.includesearch.RecyclerConstraintLayout.isClickable = false
+
+        binding.search.alpha = 0.8F
+
+        binding.mapfragment.alpha = 1.0F
+        binding.mapfragment.isClickable = true
+    }
+
+    private fun getBeachIdsFromNames(viableNames: List<String>): List<Int> {
+        val viableBeaches = mutableListOf<Beach>()
+
+        // Iterate through each name in viableNames and find matching beaches
+        Log.d("getBeachIdsFromNames", "viableNames.size = ${viableNames.size}")
+        for (name in viableNames) {
+            val matchedBeach = AllBeachesList.find { it.name.equals(name, ignoreCase = true) }
+            if (matchedBeach != null) {
+                viableBeaches.add(matchedBeach)  // Add matching beach object to the viable list
+            }
+        }
+
+        // Return the list of IDs of the matched beaches
+        return viableBeaches.map { it.id }
+    }
+
+    // Functions for Map
+
+
+
+
 
     //This function is for map initilization
     override fun onMapReady(googleMap: GoogleMap) {
@@ -657,7 +479,192 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    private fun searchBeaches(Beaches: MutableList<Beach>) {
 
+        binding.search.setIconified(true)
+        binding.search.isFocusable = false
+        binding.search.clearFocus()
+        updateSearchTitle(Beaches)
+        binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+
+        clearMarkersFromAnArray()
+        createMarkersFromAnArray(Beaches)
+         createPolygonsFromAnArray(Beaches)
+        showSuggestions(false)
+
+        moveCameraFromAnArray(Beaches)
+        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
+        binding.menu.visibility = View.VISIBLE
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
+
+    }
+
+    private fun createPolygonsFromAnArray(beaches: List<Beach>) {
+        for (beach in beaches) {
+            val polygonOptions = PolygonOptions()
+
+                .fillColor(Color.argb(108,227, 255, 255)) // Semi-transparent fill color (ARGB format)
+                .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
+                .strokeWidth(5f)
+
+            for (coord in beach.polygonCoordinates) {
+                // Assume coord[0] is longitude and coord[1] is latitude
+                val latLng = LatLng(coord[1], coord[0]) // Correct order for LatLng
+                polygonOptions.add(latLng)
+            }
+
+            mGoogleMap!!.addPolygon(polygonOptions)
+
+            Log.d("Polygon Addition", "Added polygon for ${beach.name}")
+        }
+    }
+
+    private fun moveCameraFromAnArray(Beaches:List<Beach>){
+        if(Beaches.size == 1){
+            val newCameraPosition = CameraPosition(LatLng(Beaches[0].latitude, Beaches[0].longitude), 16.0F, 0F, 0F)
+            CameraUpdateFactory.newCameraPosition(newCameraPosition)
+            mGoogleMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition))
+        }
+        else{
+            moveCameraToDefaultPosition()
+        }
+    }
+
+    private fun moveCameraToDefaultPosition(){
+        mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(21.0490, 79.2824), 4.0f))
+    }
+
+    private fun createMarkersFromAnArray(Beaches:List<Beach>){
+        var beachLatLng : LatLng
+        for(beach in Beaches){
+            beachLatLng = LatLng(beach.latitude, beach.longitude)
+
+            val markerOptions = MarkerOptions()
+            markerOptions.title(beach.name)
+            markerOptions.position(beachLatLng)
+
+            mapMarkers_Objects.add(MarkerOptions().position(beachLatLng).title(beach.name).icon(BitmapDescriptorFactory.fromBitmap(beachIcon)))
+
+            mGoogleMap!!.addMarker(mapMarkers_Objects[mapMarkers_Objects.lastIndex])
+
+            Log.d("Marker Addition", "Added ${markerOptions.title} at ${markerOptions.position.latitude}, ${markerOptions.position.longitude}")    // #Debugger
+        }
+    }
+
+    private fun updateSearchTitle(Beaches: MutableList<Beach>){
+        Log.d("In updateSearchTitle", "Changing Search results text to ${Beaches.size}")
+        var resultString = "Found ${Beaches.size} beaches"
+        if(Beaches.size == 1){resultString = "Found ${Beaches.size} beach"}
+        else if(Beaches.size == 0 && binding.search.query.isEmpty()){resultString = "Explore Beaches"}
+        else if(Beaches.size == 0){resultString = "Found no beach"}
+        binding.includesearch.RecentSearchesTextView.text = resultString
+    }
+
+    private fun clearMarkersFromAnArray() {
+        for (markerObj in mapMarkers_Objects){
+            Log.d("Marker Deletion", "Deleted ${markerObj.title}")    // #Debugger
+            markerObj.visible(false)
+            mGoogleMap!!.clear()
+        }
+        mapMarkers_Objects = mutableListOf(MarkerOptions())
+    }
+
+    private fun initBeachesTrie(){
+        beachTrie = Trie()
+        for(beach in AllBeachesList){
+            beachTrie.insert(beach.name)
+
+            Log.d("initBeachTrie", "Added ${beach.name} as beachTrie")  // #Debugging
+        }
+    }
+
+    private fun initSearchButton(){
+
+
+
+        // on opening the search bar
+        binding.search.setOnSearchClickListener {
+
+            showSuggestions()
+        }
+
+        // on closing the search bar
+        binding.search.setOnCloseListener {
+
+            showSuggestions(false)
+            clearMarkersFromAnArray()
+            false  // Return false if you want the default behavior to still occur
+        }
+
+
+        // on changing the text of the query
+        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            fun computeSuggestions(newText:String?) : MutableList<Beach>{
+                binding.suggestionRecyclerViewer.visibility = View.GONE
+                if(newText.isNullOrEmpty()){
+                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
+                    return mutableListOf()
+
+                }
+
+                val viableBeaches : MutableList<Beach>
+
+                val viableNames = beachTrie.searchByPrefix(newText)  // Search for viable names using Trie
+                for (viableName in viableNames) Log.d("computeSuggestions","Viable name: ${viableName}")  // #Debuggin
+
+                val viableBeachesID = getBeachIdsFromNames(viableNames)  // Get beach IDs based on the names
+                for (viableBeach in viableBeachesID) Log.d("computeSuggestions","Viable beach id: ${viableBeach}")  // #Debuggin
+
+                viableBeaches = viableBeachesID.map { beachId ->
+                    AllBeachesList.find { it.id == beachId }?: Beach()  // Find full beach object by ID
+                }.toMutableList()
+
+                updateSuggestionsUI(viableBeaches)
+                return viableBeaches
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query.isNullOrEmpty()) {
+                    Log.d("Query Status", "Query is empty")
+                    return true
+                }
+
+                // Perform the search in a background coroutine
+                CoroutineScope(Dispatchers.Main + Job()).launch {
+                    val suggestions = withContext(Dispatchers.IO) {
+                        computeSuggestions(query)
+                    }
+                    searchBeaches(suggestions)
+                }
+
+                binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val characterCount = newText?.length ?: 0
+                Log.d("onQueryTextChange", "Character count: ${characterCount}")
+                Log.d("onQueryTextChange", "Word changed to: ${newText}")
+
+                showSuggestions(true)
+                updateSearchTitle(computeSuggestions(newText))
+                return false
+            }
+        })
+    }
+
+    private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
+        val adapter = BeachRecyclerView.adapter as BeachAdapter
+
+
+        Log.d("In updateSuggestionsUI","BeachesList (before setFilteredList()): ${matchingBeaches.size}")
+        adapter.setFilteredList(matchingBeaches)
+
+        for(beach in matchingBeaches){
+            Log.d("In updateSuggestionsUI","Matched Name: ${beach.name}")
+        }
+        Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
+    }
 
     private fun navigation(markercord: LatLng , title : String?) {
         placename = title
@@ -667,7 +674,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
-//Navigation to a point
     private fun drawRoute(currentLoc: LatLng, destination: LatLng) {
         // Clear existing polylines if needed (optional)
         clearPreviousPolylines()
@@ -694,43 +700,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         polylines.clear()
     }
 
-
-
-
-
-
-
-
-    // Function to find the route from current location to the selected marker and draw it
-//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
-        // Use the Directions API to get the route between origin and destination
-//        val path: MutableList<List<LatLng>> = ArrayList()
-//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
-//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
-//                response ->
-//            val jsonResponse = JSONObject(response)
-//            // Get routes
-//            val routes = jsonResponse.getJSONArray("routes")
-//            val legs = routes.getJSONObject(0).getJSONArray("legs")
-//            val steps = legs.getJSONObject(0).getJSONArray("steps")
-//            for (i in 0 until steps.length()) {
-//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
-//                path.add(PolyUtil.decode(points))
-//            }
-//            for (i in 0 until path.size) {
-//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
-//            }
-//        }, Response.ErrorListener {
-//                _ ->
-//        }){}
-//        val requestQueue = Volley.newRequestQueue(this)
-//        requestQueue.add(directionsRequest)
-
-//    }
-
-
-
-    //This is for user locaton
     private fun checkLocationPermission() {
         // Check for the fine location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -777,11 +746,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionCode) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -792,268 +757,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-
-    //    This function is for bottom sheet for menu
-
-    private fun saveToggleState(buttonId: Int, isChecked: Boolean) {
-        val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean(buttonId.toString(), isChecked).apply()
-    }
-
-    private fun loadToggleState(buttonId: Int): Boolean {
-        val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
-        return sharedPreferences.getBoolean(
-            buttonId.toString(),
-            false
-
-        ) // Default to unchecked if not saved
-    }
-
-
-    private fun bottomSheet_menu() {
-        val bottomSheetDialog = BottomSheetDialog(this)
-        bottomSheetDialog.setContentView(R.layout.acc_menu)
-
-        // Find the MaterialButtonToggleGroup inside your BottomSheet layout
-        val toggleGroup =
-            bottomSheetDialog.findViewById<MaterialButtonToggleGroup>(R.id.toggleButtonGroup)
-
-        toggleGroup?.let { group ->
-            // Restore saved states for all buttons in the group
-            for (i in 0 until group.childCount) {
-                val button = group.getChildAt(i) as MaterialButton
-                val isChecked = loadToggleState(button.id)
-                button.isChecked = isChecked
-
-                // Set a default button to be checked if it's the first time or no state is found
-                if (button.id == R.id.toggleButtonNormal && !isChecked) { // Default button
-                    button.isChecked = true
-                    saveToggleState(button.id, true) // Save this default selection
-
-                    // Set default map type if googleMap is not null
-                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                }
-            }
-
-            // Add listener to update the saved state and change map type when any button is toggled
-            group.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                if (isChecked) {
-                    saveToggleState(checkedId, true)
-                    when (checkedId) {
-                        R.id.toggleButtonNormal -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                        R.id.toggleButtonSatellite -> mGoogleMap?.mapType =
-                            GoogleMap.MAP_TYPE_SATELLITE
-
-                        R.id.toggleButtonTerrain -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
-                    }
-                } else {
-                    saveToggleState(checkedId, false)
-                }
-            }
-        }
-
-        bottomSheetDialog.setOnDismissListener {
-            isBottomSheetOpen = false // Optional: reset your custom flag if needed
-        }
-
-        bottomSheetDialog.show()
-
-
-        bottomSheetDialog.setOnDismissListener {
-            isBottomSheetOpen = false // Optional: reset your custom flag if needed
-        }
-
-        bottomSheetDialog.show()
-    }
-
-
-    //    Bottomsheet for activites
-    private fun bottomSheet_activities() {
-        val bottomSheet = binding.activites
-
-        // Get BottomSheetBehavior from the FrameLayout
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        // Set or change peekHeight
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        bottomSheetBehavior.peekHeight = 200
-
-
-    }
-
-//Bottomsheet for weather
-
-    private fun bottomSheet_weather() {
-        val bottomSheet = binding.bottomWeather
-        weatherBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        weatherBottomSheetBehavior?.peekHeight = 200
-
-
-    }
-//    Bottomsheet for alert
-
-    private fun bottomSheet_alert() {
-        val bottomSheet = binding.bottomAlert
-        alertBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        alertBottomSheetBehavior?.peekHeight = 200
-
-    }
-
-
-    //    This is function is for ontoggle event for suggestion
-    override fun onToggleClick(position: Int, isChecked: Boolean) {
-        binding.navibutton.visibility = View.GONE
-        binding.includednavi.navi.clearChecked()
-        clearPreviousPolylines()
-        when (position) {
-            0 -> updateMarkers(isChecked, "Hotels")
-            1 -> updateMarkers(isChecked, "Hospitals & Clinics")
-            2 -> updateMarkers(isChecked, "Swimming")
-            3 -> updateMarkers(isChecked, "ATMS")
-            4 -> updateMarkers(isChecked, "Parking")
-            5 -> updateMarkers(isChecked, "Bathrooms")
-            6 -> updateMarkers(isChecked, "Toilets")
-            7 -> updateMarkers(isChecked, "Drinking Water")
-            8 -> updateMarkers(isChecked, "Restaurants")
-            9 -> updateMarkers(isChecked, "Entrances & Exits")
-        }
-    }
-
-    // This is function for toggle in bottom sheet
-    override fun onItemChecked(activity: String, isChecked: Boolean) {
-        if (isChecked) {
-            // Logic to mark location on the map
-            when (activity) {
-                "Speed Boat Ride" -> {
-                    val act = arrayOf(
-                        LatLng(13.066743597771906, 80.28701516457059) to "Red Boat"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(speedboatIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Banana Boat Ride" -> {
-                    val act = arrayOf(
-                        LatLng(13.038482374417155, 80.28049203254425) to "Muttukadu Boat House"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(bannaboatIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Jet Skiing" -> {
-                    val act = arrayOf(
-                        LatLng(13.047345709320679, 80.2829382070699) to "Muttukadu Boat House"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(jetskiIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Kayaking" -> {
-                    val act = arrayOf(
-                        LatLng(13.06155911434235, 80.28687797684262) to "Kayaking"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kayakingIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Beach volleyball" -> {
-                    val act = arrayOf(
-                        LatLng(13.052779902117896, 80.28292976532752) to "Beach Volleyball"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(volleyballIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Go Karting" -> {
-                    val act = arrayOf(
-                        LatLng(13.059385243235477, 80.28481804039997) to "Go Karting"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kartingIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Kannagi Statue" -> {
-                    val act = arrayOf(
-                        LatLng(13.057760767153631, 80.2822140104438) to "Kannagi Statue"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(statueIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Flying kites" -> {
-                    val act = arrayOf(
-                        LatLng(13.055419638401869, 80.28467091380509) to "Flying kites"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kiteIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "horse Riding" -> {
-                    val act = arrayOf(
-                        LatLng(13.046021568292193, 80.28222245876631) to "horse Riding"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(horseIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-
-                "Sun bath" -> {
-                    val act = arrayOf(
-                        LatLng(13.047011249666053, 80.28128596629897) to "Sun bath"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(sunbathIcon)))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-            }
-
-        } else {
-            // Logic to unmark location on the map
-            removeMarkersForCategory(activity)
-        }
-    }
-
-
-    // Step 4: Method to add/remove markers on the map
+    // Method to add/remove markers on the map
     private fun updateMarkers(isChecked: Boolean, category: String) {
         if (isChecked) {
             // Add markers related to the category
@@ -1301,7 +1005,285 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
 
+
+
+
+    // Functions for Bottom Menu
+    private fun saveToggleState(buttonId: Int, isChecked: Boolean) {
+        val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean(buttonId.toString(), isChecked).apply()
+    }
+
+    private fun loadToggleState(buttonId: Int): Boolean {
+        val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
+        return sharedPreferences.getBoolean(
+            buttonId.toString(),
+            false
+
+        ) // Default to unchecked if not saved
+    }
+
+    private fun bottomSheet_menu() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(R.layout.acc_menu)
+
+        // Find the MaterialButtonToggleGroup inside your BottomSheet layout
+        val toggleGroup =
+            bottomSheetDialog.findViewById<MaterialButtonToggleGroup>(R.id.toggleButtonGroup)
+
+        toggleGroup?.let { group ->
+            // Restore saved states for all buttons in the group
+            for (i in 0 until group.childCount) {
+                val button = group.getChildAt(i) as MaterialButton
+                val isChecked = loadToggleState(button.id)
+                button.isChecked = isChecked
+
+                // Set a default button to be checked if it's the first time or no state is found
+                if (button.id == R.id.toggleButtonNormal && !isChecked) { // Default button
+                    button.isChecked = true
+                    saveToggleState(button.id, true) // Save this default selection
+
+                    // Set default map type if googleMap is not null
+                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                }
+            }
+
+            // Add listener to update the saved state and change map type when any button is toggled
+            group.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (isChecked) {
+                    saveToggleState(checkedId, true)
+                    when (checkedId) {
+                        R.id.toggleButtonNormal -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        R.id.toggleButtonSatellite -> mGoogleMap?.mapType =
+                            GoogleMap.MAP_TYPE_SATELLITE
+
+                        R.id.toggleButtonTerrain -> mGoogleMap?.mapType = GoogleMap.MAP_TYPE_TERRAIN
+                    }
+                } else {
+                    saveToggleState(checkedId, false)
+                }
+            }
+        }
+
+        bottomSheetDialog.setOnDismissListener {
+            isBottomSheetOpen = false // Optional: reset your custom flag if needed
+        }
+
+        bottomSheetDialog.show()
+
+
+        bottomSheetDialog.setOnDismissListener {
+            isBottomSheetOpen = false // Optional: reset your custom flag if needed
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun bottomSheet_activities() {
+        val bottomSheet = binding.activites
+
+        // Get BottomSheetBehavior from the FrameLayout
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        // Set or change peekHeight
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior.peekHeight = 200
+    }
+
+    private fun bottomSheet_weather() {
+        val bottomSheet = binding.bottomWeather
+        weatherBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        weatherBottomSheetBehavior?.peekHeight = 200
+    }
+
+    private fun bottomSheet_alert() {
+        val bottomSheet = binding.bottomAlert
+        alertBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        alertBottomSheetBehavior?.peekHeight = 200
+    }
+
+    // This is function is for ontoggle event for suggestion
+    override fun onToggleClick(position: Int, isChecked: Boolean) {
+        binding.navibutton.visibility = View.GONE
+        binding.includednavi.navi.clearChecked()
+        clearPreviousPolylines()
+        when (position) {
+            0 -> updateMarkers(isChecked, "Hotels")
+            1 -> updateMarkers(isChecked, "Hospitals & Clinics")
+            2 -> updateMarkers(isChecked, "Swimming")
+            3 -> updateMarkers(isChecked, "ATMS")
+            4 -> updateMarkers(isChecked, "Parking")
+            5 -> updateMarkers(isChecked, "Bathrooms")
+            6 -> updateMarkers(isChecked, "Toilets")
+            7 -> updateMarkers(isChecked, "Drinking Water")
+            8 -> updateMarkers(isChecked, "Restaurants")
+            9 -> updateMarkers(isChecked, "Entrances & Exits")
+        }
+    }
+
+    // This is function for toggle in bottom sheet
+    override fun onItemChecked(activity: String, isChecked: Boolean) {
+        if (isChecked) {
+            // Logic to mark location on the map
+            when (activity) {
+                "Speed Boat Ride" -> {
+                    val act = arrayOf(
+                        LatLng(13.066743597771906, 80.28701516457059) to "Red Boat"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(speedboatIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Banana Boat Ride" -> {
+                    val act = arrayOf(
+                        LatLng(13.038482374417155, 80.28049203254425) to "Muttukadu Boat House"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(bannaboatIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Jet Skiing" -> {
+                    val act = arrayOf(
+                        LatLng(13.047345709320679, 80.2829382070699) to "Muttukadu Boat House"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(jetskiIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Kayaking" -> {
+                    val act = arrayOf(
+                        LatLng(13.06155911434235, 80.28687797684262) to "Kayaking"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kayakingIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Beach volleyball" -> {
+                    val act = arrayOf(
+                        LatLng(13.052779902117896, 80.28292976532752) to "Beach Volleyball"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(volleyballIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Go Karting" -> {
+                    val act = arrayOf(
+                        LatLng(13.059385243235477, 80.28481804039997) to "Go Karting"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kartingIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Kannagi Statue" -> {
+                    val act = arrayOf(
+                        LatLng(13.057760767153631, 80.2822140104438) to "Kannagi Statue"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(statueIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "Flying kites" -> {
+                    val act = arrayOf(
+                        LatLng(13.055419638401869, 80.28467091380509) to "Flying kites"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kiteIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+                "horse Riding" -> {
+                    val act = arrayOf(
+                        LatLng(13.046021568292193, 80.28222245876631) to "horse Riding"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(horseIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+
+                "Sun bath" -> {
+                    val act = arrayOf(
+                        LatLng(13.047011249666053, 80.28128596629897) to "Sun bath"
+                    )
+                    val markers = act.mapNotNull { (location, title) ->
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(sunbathIcon)))
+                    }.toMutableList()
+
+                    // Store the list of markers in the map under the category key
+                    markersMap[activity] = markers
+                }
+
+            }
+
+        } else {
+            // Logic to unmark location on the map
+            removeMarkersForCategory(activity)
+        }
+    }
+
+
+
+
+
+
+
+    // Function to find the route from current location to the selected marker and draw it
+//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
+        // Use the Directions API to get the route between origin and destination
+//        val path: MutableList<List<LatLng>> = ArrayList()
+//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
+//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
+//                response ->
+//            val jsonResponse = JSONObject(response)
+//            // Get routes
+//            val routes = jsonResponse.getJSONArray("routes")
+//            val legs = routes.getJSONObject(0).getJSONArray("legs")
+//            val steps = legs.getJSONObject(0).getJSONArray("steps")
+//            for (i in 0 until steps.length()) {
+//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+//                path.add(PolyUtil.decode(points))
+//            }
+//            for (i in 0 until path.size) {
+//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
+//            }
+//        }, Response.ErrorListener {
+//                _ ->
+//        }){}
+//        val requestQueue = Volley.newRequestQueue(this)
+//        requestQueue.add(directionsRequest)
+
+//    }
 }
-
-
-
