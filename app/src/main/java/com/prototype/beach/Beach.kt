@@ -11,5 +11,4 @@ class Beach{
     var longitude:Double = 0.0
 
     var polygonCoordinates: List<List<Double>> = listOf()
-
 }
