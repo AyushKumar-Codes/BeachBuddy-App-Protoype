@@ -48,12 +48,12 @@
 
                 <ImageView
                     android:id="@+id/imageView"
-                    android:layout_width="50dp"
+                    android:layout_width="56dp"
                     android:layout_height="match_parent"
                     android:elevation="100dp"
                     android:paddingLeft="5dp"
 
-                    android:src="@drawable/searchico"
+                    android:src="@drawable/searchbeach"
                     app:layout_constraintStart_toStartOf="parent" />
 
 
@@ -131,7 +131,9 @@
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-                <include layout="@layout/beach_activities" />
+                <include
+                    android:id="@+id/includedactivities"
+                    layout="@layout/beach_activities" />
             </FrameLayout>
 
             <FrameLayout
@@ -146,7 +148,9 @@
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-                <include layout="@layout/weather" />
+                <include
+                    android:id="@+id/includeweather"
+                    layout="@layout/weather" />
             </FrameLayout>
 
 
@@ -162,7 +166,9 @@
                 app:layout_anchorGravity="center"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-                <include layout="@layout/alert" />
+                <include
+                    android:id="@+id/includealert"
+                    layout="@layout/alert" />
             </FrameLayout>
 
             <FrameLayout

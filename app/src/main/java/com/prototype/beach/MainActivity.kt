@@ -1,7 +1,8 @@
 package com.prototype.beach
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
@@ -35,16 +36,17 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.prototype.beach.databinding.ActivityMainBinding
-import org.json.JSONObject
-import com.android.volley.Response
-import com.android.volley.Request
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 
 import com.google.android.gms.maps.model.Polyline
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.prototype.beach.databinding.ActivitySearchBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
 
@@ -80,8 +82,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var AllBeachesList: MutableList<Beach>
 
 
-
-
+//    Icons
+    private lateinit var hotelIcon: Bitmap
+    private lateinit var hospitalIcon: Bitmap
+    private lateinit var swimmingIcon: Bitmap
+    private lateinit var ATMSIcon: Bitmap
+    private lateinit var parkingIcon: Bitmap
+    private lateinit var bathroomsIcon: Bitmap
+    private lateinit var toiletIcon: Bitmap
+    private lateinit var dinkingwaterIcon: Bitmap
+    private lateinit var restaurantsIcon: Bitmap
+    private lateinit var entranceIcon: Bitmap
+    private lateinit var jetskiIcon: Bitmap
+    private lateinit var speedboatIcon: Bitmap
+    private lateinit var bannaboatIcon: Bitmap
+    private lateinit var kayakingIcon: Bitmap
+    private lateinit var volleyballIcon: Bitmap
+    private lateinit var kartingIcon: Bitmap
+    private lateinit var statueIcon: Bitmap
+    private lateinit var horseIcon: Bitmap
+    private lateinit var kiteIcon: Bitmap
+    private lateinit var sunbathIcon: Bitmap
+    private lateinit var beachIcon: Bitmap
 
     // Functions for Recycler
     private fun initBeachesRecycler(){
@@ -91,9 +113,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         fun loadBeachesFromJson(){
             val drawableMap = mapOf(
                 "beach_marina" to R.drawable.beach_marina,
-                "beach_payyambalam" to R.drawable.beach_payyambalam,
-                "beach_marie" to R.drawable.beach_marie,
-                "beach_shrivardhan" to R.drawable.beach_shrivardhan
+                "beach_corbyn" to R.drawable.beach_corbyn,
+                "beach_kovalam" to R.drawable.beach_kovalam,
+                "beach_calangute" to R.drawable.beach_calangute,
+                "beach_marari" to R.drawable.beach_marari,
             )
 
             fun getDrawableResourceIdFromString(drawableName: String): Int {
@@ -233,7 +256,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             markerOptions.title(beach.name)
             markerOptions.position(beachLatLng)
 
-            mapMarkers_Objects.add(MarkerOptions().position(beachLatLng).title(beach.name))
+            mapMarkers_Objects.add(MarkerOptions().position(beachLatLng).title(beach.name).icon(BitmapDescriptorFactory.fromBitmap(beachIcon)))
 
             mGoogleMap!!.addMarker(mapMarkers_Objects[mapMarkers_Objects.lastIndex])
 
@@ -316,18 +339,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Handle search action
-                if(query.isNullOrEmpty()) {
-                    Log.d("Query Status", "Query is empty") // #Debugging
+                if (query.isNullOrEmpty()) {
+                    Log.d("Query Status", "Query is empty")
                     return true
                 }
 
-                Log.d("Query Status Submit", "Query is not empty") // #Debugging
-                Log.d("Query Status", "Character count: ${query.length}") // #Debugging
-                Log.d("Query Status", "String: ${query}") // #Debugging
-
-
-                searchBeaches(computeSuggestions(query))
+                // Perform the search in a background coroutine
+                CoroutineScope(Dispatchers.Main + Job()).launch {
+                    val suggestions = withContext(Dispatchers.IO) {
+                        computeSuggestions(query)
+                    }
+                    searchBeaches(suggestions)
+                }
 
                 binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
                 return true
@@ -403,7 +426,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         initSearchButton()
         initBeachesRecycler()
         initBeachesTrie()
-
+        binding.includeweather.we.setOnClickListener(){
+            binding.includeweather.we.setImageResource(R.drawable.wd)
+        }
 
         binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
             // Check if the specific button is toggled
@@ -430,7 +455,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     val formattedDistance = String.format("%.2f", distance)
                     binding.includednavi.dis.text = "$formattedDistance meters"
 
-                    // Display the distance in your app (e.g., via Toast)
                     binding.includednavi.navcard.visibility = View.VISIBLE
 
                 } else {
@@ -530,11 +554,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             mutableListOf(
                 "Beach volleyball",
                 "Go Karting",
-                "Seafood",
                 "Kannagi Statue",
                 "Flying kites",
                 "horse Riding",
-                "Savor Delicious Snack",
                 "Sun bath"
             )
 
@@ -553,28 +575,88 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         recyclerView2?.layoutManager = LinearLayoutManager(this)
         recyclerView2?.adapter = ProhibitedActivitiesAdaptor
 
+//        Multithreading Icon Resizing
+        CoroutineScope(Dispatchers.IO).launch {
+            var originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hotel)
+            hotelIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hospital)
+            hospitalIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.swimming  )
+            swimmingIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.atm)
+            ATMSIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.parking)
+            parkingIcon = Bitmap.createScaledBitmap(originalIcon, 130, 110, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.shower)
+            bathroomsIcon = Bitmap.createScaledBitmap(originalIcon, 125, 110, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bathroom)
+            toiletIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.tap)
+            dinkingwaterIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.restaurant)
+            restaurantsIcon = Bitmap.createScaledBitmap(originalIcon, 140, 130, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.entrance)
+            entranceIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.jetski)
+            jetskiIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.beach)
+            beachIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bananaboat)
+            bannaboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.speedboat)
+            speedboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kayaking)
+            kayakingIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.statue)
+            statueIcon =   Bitmap.createScaledBitmap(originalIcon, 145, 180, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.volleyball)
+             volleyballIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.karting)
+            kartingIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kite)
+            kiteIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.horse)
+            horseIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.sunbath)
+            sunbathIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+
+        }
+
+
+
+
     }
 
     //This function is for map initilization
-    override fun onMapReady(p0: GoogleMap) {
-        mGoogleMap = p0
+    override fun onMapReady(googleMap: GoogleMap) {
+        mGoogleMap = googleMap
         checkLocationPermission()
-        val map = mGoogleMap
-        map?.setOnMarkerClickListener { marker ->
+
+        // Set initial camera position to India
+        val indiaLatLng = LatLng(20.5937, 78.9629) // Approximate coordinates of the center of India
+        val initialZoomLevel = 5.0f // Adjust zoom level as per your requirement
+
+        // Move the camera to the specified location
+        mGoogleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(indiaLatLng, initialZoomLevel))
+
+        // Set up marker click listener
+        mGoogleMap?.setOnMarkerClickListener { marker ->
             marker.showInfoWindow()
-            navigation(marker.position,marker.title)
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16f))
+            navigation(marker.position, marker.title)
             binding.bottommenu.clearChecked()
             true
         }
 
-        map?.setOnMapClickListener {
+        // Set up map click listener
+        mGoogleMap?.setOnMapClickListener {
             // Hide the button
             binding.navibutton.visibility = View.GONE
             binding.includednavi.navi.clearChecked()
             binding.bottommenu.clearChecked()
         }
-
     }
+
 
 
     private fun navigation(markercord: LatLng , title : String?) {
@@ -692,10 +774,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val currentLatLng = LatLng(location.latitude, location.longitude)
 
         // Optional: Add a marker at the current location
-        mGoogleMap?.addMarker(
-            MarkerOptions().position(currentLatLng).title("You are here")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.you_round))
-        )
+
     }
 
     override fun onRequestPermissionsResult(
@@ -849,7 +928,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.066743597771906, 80.28701516457059) to "Red Boat"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(speedboatIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -861,7 +940,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.038482374417155, 80.28049203254425) to "Muttukadu Boat House"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(bannaboatIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -873,7 +952,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.047345709320679, 80.2829382070699) to "Muttukadu Boat House"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(jetskiIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -885,7 +964,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.06155911434235, 80.28687797684262) to "Kayaking"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kayakingIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -897,7 +976,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.052779902117896, 80.28292976532752) to "Beach Volleyball"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(volleyballIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -909,19 +988,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.059385243235477, 80.28481804039997) to "Go Karting"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
-
-                "Seafood" -> {
-                    val act = arrayOf(
-                        LatLng(13.062978853517938, 80.28335890128237) to "Seafood"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kartingIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -933,7 +1000,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.057760767153631, 80.2822140104438) to "Kannagi Statue"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(statueIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -945,7 +1012,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         LatLng(13.055419638401869, 80.28467091380509) to "Flying kites"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(kiteIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -954,34 +1021,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 "horse Riding" -> {
                     val act = arrayOf(
-                        LatLng(13.049357683955987, 80.28241249404105) to "horse Riding"
+                        LatLng(13.046021568292193, 80.28222245876631) to "horse Riding"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(horseIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
                     markersMap[activity] = markers
                 }
 
-                "Savor Delicious Snack" -> {
-                    val act = arrayOf(
-                        LatLng(13.051296480340053, 80.28364631013953) to "Savor Delicious Snack"
-                    )
-                    val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
-                    }.toMutableList()
-
-                    // Store the list of markers in the map under the category key
-                    markersMap[activity] = markers
-                }
 
                 "Sun bath" -> {
                     val act = arrayOf(
                         LatLng(13.047011249666053, 80.28128596629897) to "Sun bath"
                     )
                     val markers = act.mapNotNull { (location, title) ->
-                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                        mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(sunbathIcon)))
                     }.toMutableList()
 
                     // Store the list of markers in the map under the category key
@@ -993,7 +1049,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         } else {
             // Logic to unmark location on the map
             removeMarkersForCategory(activity)
-            Toast.makeText(this, "$activity unselected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1026,14 +1081,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             } else {
                 addMarkersForCategory(category)
             }
-            Toast.makeText(this, "$category enabled", Toast.LENGTH_SHORT).show()
+
         } else {
             // Remove markers related to the category
             if (category == "Swimming") {
                 removeOutlineForActivity(category);
             } else {
                 removeMarkersForCategory(category)
-                Toast.makeText(this, "$category disabled", Toast.LENGTH_SHORT).show()
+
             }
         }
     }
@@ -1054,7 +1109,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.041064480306924, 80.26744097437829) to "Sarada Nivas Lodging"
                 )
                 val markers = hotels.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(hotelIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1075,7 +1130,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.060969749370352, 80.2780169231282) to "Gosha Hospital"
                 )
                 val markers = hospital.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(hospitalIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1087,7 +1142,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.055383476003025, 80.28200536890765) to "Public Bathroom",
                 )
                 val markers = bathroom.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(bathroomsIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1107,7 +1162,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.043008568022207, 80.28003126314842) to "Beach toilet"
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(toiletIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1121,7 +1176,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.054505138898108, 80.282219942212) to "Drinking Water"
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(dinkingwaterIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1139,7 +1194,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.049153477301324, 80.28091101988899) to "Mobile Sea Food Restaurant"
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(restaurantsIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1154,7 +1209,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.062113245698342, 80.28039603463786) to "State Bank of India ATM"
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(ATMSIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1169,7 +1224,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.055072543150352, 80.28189137543683) to "Parking"
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(parkingIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1181,7 +1236,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     LatLng(13.051326946953102, 80.28110951147448) to "Marina Beach Entry Point",
                 )
                 val markers = loc.mapNotNull { (location, title) ->
-                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title))
+                    mGoogleMap?.addMarker(MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.fromBitmap(entranceIcon)))
                 }.toMutableList()
 
                 // Store the list of markers in the map under the category key
@@ -1230,7 +1285,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     )
                 ) // Position the marker at the first point of the polygon
                 .title(category) // Set the title of the marker
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.swim))
+                .icon(BitmapDescriptorFactory.fromBitmap(swimmingIcon))
         )
 
         // Add the title marker to the list
