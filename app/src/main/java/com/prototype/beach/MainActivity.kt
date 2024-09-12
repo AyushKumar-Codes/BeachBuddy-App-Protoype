@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     // for viewbinding
     lateinit var binding: ActivityMainBinding
 
+
+
     // for maps
     private var mGoogleMap: GoogleMap? = null
     private val markersMap: MutableMap<String, MutableList<Marker>> = mutableMapOf()
@@ -67,27 +69,54 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private lateinit var mapMarkers_Objects: MutableList<MarkerOptions>
     private var placename:String? = null
 
+
+
+    // for bottom menu
+    private lateinit var bottommenu : MaterialButtonToggleGroup
+
+
+
     // for bottom sheets
     private var isBottomSheetOpen = false
     private var weatherBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var alertBottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    // for activities
+    private lateinit var bottomSheet : FrameLayout
 
-    // for the recycler
-    private lateinit var recyclerView: RecyclerView
-
-    // for the adapters
-    private lateinit var suggestionAdapter: SuggestionAdapter
+    // for ideal activities subcategory
+    private lateinit var idealRecyclerView: RecyclerView
     private lateinit var IdealActivitiesAdaptor: ActivitiesAdaptor
-    private lateinit var OtherActivitiesAdaptor: ActivitiesAdaptor
+    private lateinit var Idealactivities: MutableList<String>
+
+    // for other activities subcategory
+    private lateinit var otherRecyclerView: RecyclerView
+    private lateinit var otherActivitiesAdaptor: ActivitiesAdaptor
+    private lateinit var otherActivitesList : MutableList<String>
+
+    // for prohibited subcategories
+    private lateinit var prohibitedActivitiesRecyclerView: RecyclerView
     private lateinit var ProhibitedActivitiesAdaptor: ProhibitedActivites
+    private lateinit var prohibitedActivities : MutableList<String>
+
+
+
+
+    // for suggestions
+    private lateinit var sugesstionRecyclerView : RecyclerView
+    private lateinit var suggestionAdapter: SuggestionAdapter
+
+
 
     // Recycler for beaches
     private lateinit var BeachRecyclerView: RecyclerView
     private lateinit var BeachesList: MutableList<Beach>
     private lateinit var beachTrie:Trie
 
+
+
     // Data
     private lateinit var AllBeachesList: MutableList<Beach>
+
 
 
     // for icons
@@ -122,222 +151,32 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // initializing the data-binding
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        mapMarkers_Objects = mutableListOf()
-
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-//        This part is for map initializtion
-        val mapFragment =
-            supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
+        initMap()
 
         initSearchButton()
         initBeachesRecycler()
         initBeachesTrie()
-        binding.includeweather.we.setOnClickListener(){
-            binding.includeweather.we.setImageResource(R.drawable.wd)
-        }
 
-        binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            // Check if the specific button is toggled
-            if (checkedId == binding.includednavi.naviButton.id) {
-                if (isChecked) {
-                    // Button is checked: Call drawRoute
-                    drawRoute(currentLoc, destination)
-                    binding.includednavi.naviButton.text = "Cancel"
+        initIncludeWeather()
+        initMenuButton()
 
-                    val startLocation = Location("start").apply {
-                        latitude = currentLoc.latitude
-                        longitude = currentLoc.longitude
-                    }
+        initBottomMenu()
 
-                    val endLocation = Location("end").apply {
-                        latitude = destination.latitude
-                        longitude = destination.longitude
-                    }
+        initSuggestionsRecyclerView()
 
-                    // Calculate the distance in meters
-                    val distance = startLocation.distanceTo(endLocation)
-
-                    binding.includednavi.placename.text = placename
-                    val formattedDistance = String.format("%.2f", distance)
-                    binding.includednavi.dis.text = "$formattedDistance meters"
-
-                    binding.includednavi.navcard.visibility = View.VISIBLE
-
-                } else {
-                    binding.includednavi.naviButton.text = "Find Route"
-                    // Button is unchecked: Call clearPreviousPolylines
-                    binding.includednavi.navcard.visibility = View.GONE
-                    clearPreviousPolylines()
-                }
-            }
-        }
+        initActivitiesSubcategory()
+        initOtherActivitiesSubategory()
+        initProhibitedSubcategory()
 
 
 
 
-
-//        This part is for  bottomsheet for the menu
-        binding.acc.setOnClickListener {
-            if (!isBottomSheetOpen) {
-                bottomSheet_menu();
-                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
-            }
-        }
-
-//        This part is for bottomsheet for the activities
-        val bottommenu = binding.bottommenu
-        bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
-            if (ischecked) {
-                binding.navibutton.visibility = View.GONE
-                binding.includednavi.navi.clearChecked()
-                when (checkid) {
-                    R.id.act -> {
-                        bottomSheet_activities()
-
-                    };
-                    R.id.weather -> {
-                        bottomSheet_weather()
-                    }
-
-                    R.id.alerts -> {
-
-                        bottomSheet_alert()
-                    }
-                }
-            } else {
-                when (checkid) {
-                    R.id.act -> {
-                        val bottomSheet = binding.activites
-
-                        // Get BottomSheetBehavior from the FrameLayout
-                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-                        // Set or change peekHeight
-                        bottomSheetBehavior.peekHeight = 0
-                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-
-                    }
-
-                    R.id.weather -> {
-                        weatherBottomSheetBehavior?.peekHeight = 0
-                        weatherBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    }
-
-                    R.id.alerts -> {
-                        alertBottomSheetBehavior?.peekHeight = 0
-                        alertBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    }
-                }
-            }
-
-        }
-
-
-//This part is for recycler View of suggestions
-        recyclerView = binding.suggestionRecyclerViewer
-        suggestionAdapter = SuggestionAdapter(this, this)
-        recyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.adapter = suggestionAdapter
-
-        //This part is of Ideal Activity
-
-        val bottomSheet = binding.activites
-
-        val recyclerView: RecyclerView? = bottomSheet.findViewById(R.id.ideal_activities);
-        val Idealactivities =
-            mutableListOf("Jet Skiing", "Banana Boat Ride", "Speed Boat Ride", "Kayaking")
-
-
-        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this);
-        recyclerView?.layoutManager =
-            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
-        recyclerView?.adapter = IdealActivitiesAdaptor
-
-//    Other activites
-
-        val recyclerView1: RecyclerView? = bottomSheet.findViewById(R.id.other_activites);
-        val otheractivites =
-            mutableListOf(
-                "Beach volleyball",
-                "Go Karting",
-                "Kannagi Statue",
-                "Flying kites",
-                "horse Riding",
-                "Sun bath"
-            )
-
-        OtherActivitiesAdaptor = ActivitiesAdaptor(otheractivites, this);
-        recyclerView1?.layoutManager =
-            GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
-        recyclerView1?.adapter = OtherActivitiesAdaptor
-
-//Prohibited
-
-        val recyclerView2: RecyclerView? = bottomSheet.findViewById(R.id.prohibited_activites)
-        val prohibitedActivities = mutableListOf("Bathing", "Surfing", "Swimming")
-
-        ProhibitedActivitiesAdaptor =
-            ProhibitedActivites(prohibitedActivities) // Properly initialize the adapter
-        recyclerView2?.layoutManager = LinearLayoutManager(this)
-        recyclerView2?.adapter = ProhibitedActivitiesAdaptor
-
-//        Multithreading Icon Resizing
-        CoroutineScope(Dispatchers.IO).launch {
-            var originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hotel)
-            hotelIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
-            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hospital)
-            hospitalIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
-            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.swimming  )
-            swimmingIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
-            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.atm)
-            ATMSIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
-            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.parking)
-            parkingIcon = Bitmap.createScaledBitmap(originalIcon, 130, 110, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.shower)
-            bathroomsIcon = Bitmap.createScaledBitmap(originalIcon, 125, 110, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bathroom)
-            toiletIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.tap)
-            dinkingwaterIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.restaurant)
-            restaurantsIcon = Bitmap.createScaledBitmap(originalIcon, 140, 130, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.entrance)
-            entranceIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.jetski)
-            jetskiIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.beach)
-            beachIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bananaboat)
-            bannaboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.speedboat)
-            speedboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kayaking)
-            kayakingIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.statue)
-            statueIcon =   Bitmap.createScaledBitmap(originalIcon, 145, 180, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.volleyball)
-            volleyballIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.karting)
-            kartingIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kite)
-            kiteIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.horse)
-            horseIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.sunbath)
-            sunbathIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
-
-        }
-
-
-
-
+        initMultiThreading()
     }
+
 
 
 
@@ -443,13 +282,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         return viableBeaches.map { it.id }
     }
 
+
+
+
+
     // Functions for Map
+    private fun initMap(){
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        mapMarkers_Objects = mutableListOf()
+        val mapFragment =
+            supportFragmentManager.findFragmentById(R.id.mapfragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
 
-
-
-
-
-    //This function is for map initilization
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
         checkLocationPermission()
@@ -579,23 +424,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     }
 
     private fun initSearchButton(){
-
-
-
         // on opening the search bar
         binding.search.setOnSearchClickListener {
-
             showSuggestions()
         }
 
         // on closing the search bar
         binding.search.setOnCloseListener {
-
             showSuggestions(false)
             clearMarkersFromAnArray()
             false  // Return false if you want the default behavior to still occur
         }
-
 
         // on changing the text of the query
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -604,7 +443,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 if(newText.isNullOrEmpty()){
                     updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
                     return mutableListOf()
-
                 }
 
                 val viableBeaches : MutableList<Beach>
@@ -1008,7 +846,111 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // Functions for suggestions
+    private fun initSuggestionsRecyclerView(){
+        sugesstionRecyclerView = binding.suggestionRecyclerViewer
+
+        suggestionAdapter = SuggestionAdapter(this, this)
+
+        sugesstionRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        sugesstionRecyclerView.adapter = suggestionAdapter
+    }
+
+
+
+
+
     // Functions for Bottom Menu
+    private fun initBottomMenu(){
+        bottommenu = binding.bottommenu
+        bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
+            if (ischecked) {
+                binding.navibutton.visibility = View.GONE
+                binding.includednavi.navi.clearChecked()
+                when (checkid) {
+                    R.id.act -> {
+                        bottomSheet_activities()
+
+                    };
+                    R.id.weather -> {
+                        bottomSheet_weather()
+                    }
+
+                    R.id.alerts -> {
+
+                        bottomSheet_alert()
+                    }
+                }
+            } else {
+                when (checkid) {
+                    R.id.act -> {
+                        // Get BottomSheetBehavior from the FrameLayout
+                        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+                        // Set or change peekHeight
+                        bottomSheetBehavior.peekHeight = 0
+                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+                    }
+
+                    R.id.weather -> {
+                        weatherBottomSheetBehavior?.peekHeight = 0
+                        weatherBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }
+
+                    R.id.alerts -> {
+                        alertBottomSheetBehavior?.peekHeight = 0
+                        alertBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }
+                }
+            }
+
+        }
+    }
+
+    // ideal activity category
+    private fun initActivitiesSubcategory(){
+        bottomSheet = binding.activites
+
+        idealRecyclerView = bottomSheet.findViewById(R.id.ideal_activities);
+        Idealactivities = mutableListOf("Jet Skiing", "Banana Boat Ride", "Speed Boat Ride", "Kayaking")
+
+        idealRecyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
+
+        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this);
+        idealRecyclerView.adapter = IdealActivitiesAdaptor
+    }
+
+    // other activity category
+    private fun initOtherActivitiesSubategory(){
+        otherRecyclerView = bottomSheet.findViewById(R.id.other_activites)
+
+        otherActivitesList = mutableListOf(
+            "Beach volleyball",
+            "Go Karting",
+            "Kannagi Statue",
+            "Flying kites",
+            "horse Riding",
+            "Sun bath"
+        )
+
+        otherActivitiesAdaptor = ActivitiesAdaptor(otherActivitesList, this);
+
+        otherRecyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
+        otherRecyclerView.adapter = otherActivitiesAdaptor
+    }
+
+    // prohibited activity category
+    private fun initProhibitedSubcategory(){
+        prohibitedActivitiesRecyclerView = bottomSheet.findViewById(R.id.prohibited_activites)
+
+        prohibitedActivities = mutableListOf("Bathing", "Surfing", "Swimming")
+
+        ProhibitedActivitiesAdaptor = ProhibitedActivites(prohibitedActivities)
+
+        prohibitedActivitiesRecyclerView.layoutManager = LinearLayoutManager(this)
+        prohibitedActivitiesRecyclerView.adapter = ProhibitedActivitiesAdaptor
+    }
+
     private fun saveToggleState(buttonId: Int, isChecked: Boolean) {
         val sharedPreferences = getSharedPreferences("ToggleStates", MODE_PRIVATE)
         sharedPreferences.edit().putBoolean(buttonId.toString(), isChecked).apply()
@@ -1254,13 +1196,122 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         }
     }
 
+    // for the contents of the bottom menu
+    private fun initIncludeWeather(){
+    binding.includeweather.we.setOnClickListener() {
+        binding.includeweather.we.setImageResource(R.drawable.wd)
+    }
+
+    binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
+        // Check if the specific button is toggled
+        if (checkedId == binding.includednavi.naviButton.id) {
+            if (isChecked) {
+                // Button is checked: Call drawRoute
+                drawRoute(currentLoc, destination)
+                binding.includednavi.naviButton.text = "Cancel"
+
+                val startLocation = Location("start").apply {
+                    latitude = currentLoc.latitude
+                    longitude = currentLoc.longitude
+                }
+
+                val endLocation = Location("end").apply {
+                    latitude = destination.latitude
+                    longitude = destination.longitude
+                }
+
+                // Calculate the distance in meters
+                val distance = startLocation.distanceTo(endLocation)
+
+                binding.includednavi.placename.text = placename
+                val formattedDistance = String.format("%.2f", distance)
+                binding.includednavi.dis.text = "$formattedDistance meters"
+
+                binding.includednavi.navcard.visibility = View.VISIBLE
+
+            } else {
+                binding.includednavi.naviButton.text = "Find Route"
+                // Button is unchecked: Call clearPreviousPolylines
+                binding.includednavi.navcard.visibility = View.GONE
+                clearPreviousPolylines()
+            }
+        }
+    }
+}
+
+    // menu button
+    private fun initMenuButton(){
+        binding.acc.setOnClickListener {
+            if (!isBottomSheetOpen) {
+                bottomSheet_menu();
+                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+            }
+        }
+    }
 
 
 
 
 
 
-    // Function to find the route from current location to the selected marker and draw it
+
+    // for Multi-threading
+
+
+    // Multithreading Icon Resizing
+    private fun initMultiThreading(){
+        CoroutineScope(Dispatchers.IO).launch {
+            var originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hotel)
+            hotelIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.hospital)
+            hospitalIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.swimming  )
+            swimmingIcon = Bitmap.createScaledBitmap(originalIcon, 150, 140, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.atm)
+            ATMSIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon = BitmapFactory.decodeResource(resources, R.drawable.parking)
+            parkingIcon = Bitmap.createScaledBitmap(originalIcon, 130, 110, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.shower)
+            bathroomsIcon = Bitmap.createScaledBitmap(originalIcon, 125, 110, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bathroom)
+            toiletIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.tap)
+            dinkingwaterIcon = Bitmap.createScaledBitmap(originalIcon, 120, 120, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.restaurant)
+            restaurantsIcon = Bitmap.createScaledBitmap(originalIcon, 140, 130, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.entrance)
+            entranceIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.jetski)
+            jetskiIcon = Bitmap.createScaledBitmap(originalIcon, 100, 100, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.beach)
+            beachIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.bananaboat)
+            bannaboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.speedboat)
+            speedboatIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kayaking)
+            kayakingIcon =  Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.statue)
+            statueIcon =   Bitmap.createScaledBitmap(originalIcon, 145, 180, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.volleyball)
+            volleyballIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.karting)
+            kartingIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.kite)
+            kiteIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.horse)
+            horseIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+            originalIcon =  BitmapFactory.decodeResource(resources, R.drawable.sunbath)
+            sunbathIcon = Bitmap.createScaledBitmap(originalIcon, 145, 160, false)
+
+        }
+    }
+
+
+
+
+
+// Function to find the route from current location to the selected marker and draw it
 //    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
         // Use the Directions API to get the route between origin and destination
 //        val path: MutableList<List<LatLng>> = ArrayList()
