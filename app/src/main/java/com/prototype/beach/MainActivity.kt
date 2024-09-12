@@ -1,5 +1,6 @@
 package com.prototype.beach
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -43,9 +44,11 @@ import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
-
     // For data-binding
     lateinit var binding: ActivityMainBinding
+
+    // For Account
+    private var accountID: Int = -1
 
     // For maps
     private var mGoogleMap: GoogleMap? = null
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -149,9 +152,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
         // This part is for  bottomsheet for the menu
         binding.accountButton.setOnClickListener {
-            if (!isBottomSheetOpen) {
-                bottomSheet_menu();
-                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+            if (accountID == -1) {
+                var intent = Intent(this, SignInActivity::class.java)
+                startActivity(intent)
+                
+                if (!isBottomSheetOpen) {
+                    bottomSheet_menu();
+                    isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+                }
             }
         }
 
