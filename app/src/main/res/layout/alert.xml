@@ -34,8 +34,8 @@
         android:layout_height="600dp"
         app:cardCornerRadius="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/cardView4456"
-        app:layout_constraintStart_toStartOf="@+id/cardView4456"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardView4456">
 
         <LinearLayout
