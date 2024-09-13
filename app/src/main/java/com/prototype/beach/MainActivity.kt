@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
     // for account
-    private lateinit var accountID: Int
+    private var accountID: Int = -1
 
 
 
