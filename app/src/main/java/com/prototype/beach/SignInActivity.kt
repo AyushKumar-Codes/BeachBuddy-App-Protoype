@@ -41,6 +41,13 @@ class SignInActivity :AppCompatActivity(){
                 true
             } else {false}
         }
+
+        signinBinding.submitButtonView.setOnClickListener{
+            val username: String = signinBinding.inputUsernameEditTextView.text.toString()
+            val password: String = signinBinding.inputPasswordEditTextView.text.toString()
+
+            checkCredentials(username, password)
+        }
     }
 
     private fun checkCredentials(username : String, password : String){
