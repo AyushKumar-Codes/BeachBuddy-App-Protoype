@@ -1,12 +1,17 @@
 package com.prototype.beach
 
 import android.Manifest
+import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,6 +21,8 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.GridLayoutManager
@@ -62,6 +69,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // for account
     private var accountID: Int = -1
+
+
+
+
+
+    // for intents
+    private lateinit var intentNotifications : Intent
 
 
 
@@ -155,6 +169,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // for global variables
+    object DataRepository {
+        // notifications
+        lateinit var mainNotificationManager : NotificationManager
+        var notificationsList : MutableList<NotificationClass> = mutableListOf()
+
+        val defaultChannelID = "notification_weather"
+        val defaultChannelName = "Weather Alerts"
+        var globalNotificationID = 1      // an id that will uniquely identify a notification
+    }
+
 
 
 
@@ -184,6 +209,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
         initMultiThreading()
+
+
+
+        // notifications
+        initNotifications()
+        fetchNotifications()
+        testNotification()  // #testing
     }
 
 
@@ -879,14 +911,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 when (checkid) {
                     R.id.act -> {
                         bottomSheet_activities()
-
                     };
                     R.id.weather -> {
                         bottomSheet_weather()
                     }
 
                     R.id.alerts -> {
-
+                        startActivity(intentNotifications)
                         bottomSheet_alert()
                     }
                 }
@@ -1326,30 +1357,115 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
-// Function to find the route from current location to the selected marker and draw it
-//    private fun findAndDrawRoute(origin: LatLng, destination: LatLng) {
-        // Use the Directions API to get the route between origin and destination
-//        val path: MutableList<List<LatLng>> = ArrayList()
-//        val urlDirections = "https://maps.googleapis.com/maps/api/directions/json?destination=13.052982445423426,80.28112811740154&origin=13.052909284097835,80.27369303415786&key=AIzaSyD6O82eykWzYP0zrUoiotWO3Cl9HOFMf40"
-//        val directionsRequest = object : StringRequest(Request.Method.GET, urlDirections, Response.Listener<String> {
-//                response ->
-//            val jsonResponse = JSONObject(response)
-//            // Get routes
-//            val routes = jsonResponse.getJSONArray("routes")
-//            val legs = routes.getJSONObject(0).getJSONArray("legs")
-//            val steps = legs.getJSONObject(0).getJSONArray("steps")
-//            for (i in 0 until steps.length()) {
-//                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
-//                path.add(PolyUtil.decode(points))
-//            }
-//            for (i in 0 until path.size) {
-//                this.mGoogleMap!!.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
-//            }
-//        }, Response.ErrorListener {
-//                _ ->
-//        }){}
-//        val requestQueue = Volley.newRequestQueue(this)
-//        requestQueue.add(directionsRequest)
 
-//    }
+    // for notifications
+    private fun initNotifications(){
+        intentNotifications = Intent(this, NotificationActivity::class.java)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the notification channel (for Android 8.0 and above)
+            val mainChannel = NotificationChannel(
+                DataRepository.defaultChannelID,
+                DataRepository.defaultChannelName,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+
+            mainChannel.enableVibration(true)
+            mainChannel.description = "BeachBuddy Notifications"
+            mainChannel.lockscreenVisibility = 1
+
+            com.bluecoast.map.SearchActivity.DataRepository.mainNotificationManager = getSystemService(
+                Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // Register the notification channel with the system
+            com.bluecoast.map.SearchActivity.DataRepository.mainNotificationManager.createNotificationChannel(mainChannel)
+        }
+
+        binding.notificationImageView.setImageResource(R.drawable.notification_bell_alarm)
+
+        // defines an event when the notification bell is clicked on
+        binding.notificationImageView.setOnClickListener{
+            val intent = Intent(this, NotificationActivity::class.java)
+            // Pass relevant beach data (e.g., name or ID) to the new activity
+            intent.putExtra("notificationList", com.bluecoast.map.SearchActivity.DataRepository.notificationsList)
+            startActivity(intent)
+        }
+    }
+
+    private fun createNotification(context: Context, notificationObject : NotificationClass) {
+        // Create a notification
+        val notification = NotificationCompat.Builder(context, DataRepository.defaultChannelID)  // defaultChannelID required
+            .setSmallIcon(R.drawable.volleyball_ball)
+            .setContentTitle(notificationObject.title)
+            .setContentText(notificationObject.message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)  // Ensures it's a high priority notification
+            .build()  // Build the notification
+
+        // Checking notification permission (for Android 13+)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            NotificationManagerCompat.from(context).notify(DataRepository.globalNotificationID++, notification)
+        } else {
+            // Optionally, request notification permission for Android 13+
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1001
+            )
+        }
+        com.bluecoast.map.SearchActivity.DataRepository.notificationsList.add(notificationObject)
+    }
+
+    private fun fetchNotifications(): MutableList<NotificationClass>{
+        var userHasPendingNotifications : Boolean = true
+
+        if (!userHasPendingNotifications)return mutableListOf()
+
+        fun fetchNotificationsListFromServer():MutableList<NotificationClass>{
+            var mockListOfNotifications: MutableList<NotificationClass> = mutableListOf(
+                NotificationClass().apply {
+                    id = DataRepository.globalNotificationID++
+                    type = 1
+                    title = "Stormy Clouds Alert"
+                    message = "Stormy Clouds are expected at your planned location"
+                    mainImageID = R.drawable.exclamation
+                    colorCode = "red"
+                },
+                NotificationClass().apply {
+                    id = DataRepository.globalNotificationID++
+                    type = 2
+                    title = "Update on Planned Trip"
+                    message = "Suitable Weather expected at your planned location tomorrow"
+                    mainImageID = R.drawable.calendar
+                    colorCode = "blue"
+                },
+                NotificationClass().apply {
+                    id = DataRepository.globalNotificationID++
+                    type = 3
+                    title = "Great weather"
+                    message = "Great weather for trying volleyball"
+                    mainImageID = R.drawable.volleyball_ball
+                    colorCode = "green"
+                }
+            )
+            return mockListOfNotifications
+        }
+
+        DataRepository.notificationsList = fetchNotificationsListFromServer()
+        return DataRepository.notificationsList
+    }
+
+
+
+
+
+
+
+
+
+    // TESTING
+    fun testNotification(){     // #testing
+        for (notification in DataRepository.notificationsList){
+            createNotification(baseContext, notification)
+        }
+    }
 }
