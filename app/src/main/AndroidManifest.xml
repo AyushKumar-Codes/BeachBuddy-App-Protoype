@@ -39,6 +39,10 @@
 
         <activity android:name=".SignInActivity"
             android:exported="false"/>
+
+        <activity android:name=".NotificationActivity"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

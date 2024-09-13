@@ -47,7 +47,6 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.prototype.beach.databinding.ActivityMainBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
-
 import com.google.android.gms.maps.model.Polyline
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -917,7 +916,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                     }
 
                     R.id.alerts -> {
-                        startActivity(intentNotifications)
                         bottomSheet_alert()
                     }
                 }
@@ -1374,21 +1372,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             mainChannel.description = "BeachBuddy Notifications"
             mainChannel.lockscreenVisibility = 1
 
-            com.bluecoast.map.SearchActivity.DataRepository.mainNotificationManager = getSystemService(
+            DataRepository.mainNotificationManager = getSystemService(
                 Context.NOTIFICATION_SERVICE) as NotificationManager
 
             // Register the notification channel with the system
-            com.bluecoast.map.SearchActivity.DataRepository.mainNotificationManager.createNotificationChannel(mainChannel)
+            DataRepository.mainNotificationManager.createNotificationChannel(mainChannel)
         }
 
         binding.notificationImageView.setImageResource(R.drawable.notification_bell_alarm)
 
         // defines an event when the notification bell is clicked on
         binding.notificationImageView.setOnClickListener{
-            val intent = Intent(this, NotificationActivity::class.java)
-            // Pass relevant beach data (e.g., name or ID) to the new activity
-            intent.putExtra("notificationList", com.bluecoast.map.SearchActivity.DataRepository.notificationsList)
-            startActivity(intent)
+            startActivity(intentNotifications)
         }
     }
 
@@ -1412,7 +1407,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 1001
             )
         }
-        com.bluecoast.map.SearchActivity.DataRepository.notificationsList.add(notificationObject)
     }
 
     private fun fetchNotifications(): MutableList<NotificationClass>{
