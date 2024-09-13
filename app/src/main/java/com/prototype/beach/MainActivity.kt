@@ -1,5 +1,7 @@
 package com.prototype.beach
+
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -53,6 +55,15 @@ import java.io.InputStreamReader
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
     // for viewbinding
     lateinit var binding: ActivityMainBinding
+
+
+
+
+
+    // for account
+    private lateinit var accountID: Int
+
+
 
 
 
@@ -170,8 +181,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initActivitiesSubcategory()
         initOtherActivitiesSubategory()
         initProhibitedSubcategory()
-
-
 
 
         initMultiThreading()
@@ -1241,10 +1250,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // menu button
     private fun initMenuButton(){
+        // This part is for  bottomsheet for the menu
         binding.acc.setOnClickListener {
-            if (!isBottomSheetOpen) {
-                bottomSheet_menu();
-                isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+            if (accountID == -1) {
+                var intent = Intent(this, SignInActivity::class.java)
+                startActivity(intent)
+
+                if (!isBottomSheetOpen) {
+                    bottomSheet_menu();
+                    isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+                }
             }
         }
     }
