@@ -6,6 +6,5 @@ data class BeachJson(
     var name: String,
     var latitude: Double,
     var longitude: Double,
-    var polygonCoordinates:List<List<Double>> = listOf()
-
+    var boundary:List<List<Double>> = listOf()
 )

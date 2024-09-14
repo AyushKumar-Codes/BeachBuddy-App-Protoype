@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 beach.imageID = getDrawableResourceIdFromString(beachJson.imageName)
                 beach.latitude = beachJson.latitude
                 beach.longitude = beachJson.longitude
-                beach.polygonCoordinates = beachJson.polygonCoordinates
+                beach.boundary = beachJson.boundary
 
                 Log.d("Entered beach", "id:${beach.id}\tname:${beach.name}")
                 AllBeachesList.add(beach)
@@ -392,7 +392,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
                 .strokeWidth(5f)
 
-            for (coord in beach.polygonCoordinates) {
+            for (coord in beach.boundary) {
                 // Assume coord[0] is longitude and coord[1] is latitude
                 val latLng = LatLng(coord[1], coord[0]) // Correct order for LatLng
                 polygonOptions.add(latLng)
