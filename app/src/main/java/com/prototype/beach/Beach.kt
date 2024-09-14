@@ -10,5 +10,5 @@ class Beach{
     var latitude:Double = 0.0
     var longitude:Double = 0.0
 
-    var boundary: List<List<Double>> = listOf()
+    var boundary: List<CoordinateClass> = listOf()
 }

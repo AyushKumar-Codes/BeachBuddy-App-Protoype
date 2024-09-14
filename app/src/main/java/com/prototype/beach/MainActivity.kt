@@ -54,6 +54,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
@@ -170,6 +171,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // for global variables
     object DataRepository {
+        // MongoDB
+//        lateinit var clientMongoDB: MongoClient
+//        var mongodbConnectionString : String = "mongodb://localhost:27017/"
+
+
+
         // notifications
         lateinit var mainNotificationManager : NotificationManager
         var notificationsList : MutableList<NotificationClass> = mutableListOf()
@@ -215,6 +222,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initNotifications()
         fetchNotifications()
         testNotification()  // #testing
+
+
+        // MongoDB
+//        initMongoDB()
+//        testDatabase()  // #testing
     }
 
 
@@ -365,12 +377,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     }
 
     private fun searchBeaches(Beaches: MutableList<Beach>) {
-
         binding.search.setIconified(true)
         binding.search.isFocusable = false
         binding.search.clearFocus()
-        updateSearchTitle(Beaches)
         binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+        updateSearchTitle(Beaches)
 
         clearMarkersFromAnArray()
         createMarkersFromAnArray(Beaches)
@@ -381,20 +392,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.suggestionRecyclerViewer.visibility = View.VISIBLE
         binding.menu.visibility = View.VISIBLE
         binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
-
     }
 
     private fun createPolygonsFromAnArray(beaches: List<Beach>) {
         for (beach in beaches) {
             val polygonOptions = PolygonOptions()
-
                 .fillColor(Color.argb(108,227, 255, 255)) // Semi-transparent fill color (ARGB format)
                 .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
                 .strokeWidth(5f)
 
-            for (coord in beach.boundary) {
-                // Assume coord[0] is longitude and coord[1] is latitude
-                val latLng = LatLng(coord[1], coord[0]) // Correct order for LatLng
+            for (coordinate in beach.boundary) {
+                val latLng = LatLng(coordinate.latitude, coordinate.longitude)
                 polygonOptions.add(latLng)
             }
 
@@ -667,7 +675,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         } else {
             // Remove markers related to the category
             if (category == "Swimming") {
-                removeOutlineForActivity(category);
+                removeOutlineForActivity(category)
             } else {
                 removeMarkersForCategory(category)
 
@@ -910,7 +918,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 when (checkid) {
                     R.id.act -> {
                         bottomSheet_activities()
-                    };
+                    }
                     R.id.weather -> {
                         bottomSheet_weather()
                     }
@@ -949,12 +957,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private fun initActivitiesSubcategory(){
         bottomSheet = binding.activites
 
-        idealRecyclerView = bottomSheet.findViewById(R.id.ideal_activities);
+        idealRecyclerView = bottomSheet.findViewById(R.id.ideal_activities)
         Idealactivities = mutableListOf("Jet Skiing", "Banana Boat Ride", "Speed Boat Ride", "Kayaking")
 
         idealRecyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
 
-        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this);
+        IdealActivitiesAdaptor = ActivitiesAdaptor(Idealactivities, this)
         idealRecyclerView.adapter = IdealActivitiesAdaptor
     }
 
@@ -971,7 +979,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             "Sun bath"
         )
 
-        otherActivitiesAdaptor = ActivitiesAdaptor(otherActivitesList, this);
+        otherActivitiesAdaptor = ActivitiesAdaptor(otherActivitesList, this)
 
         otherRecyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
         otherRecyclerView.adapter = otherActivitiesAdaptor
@@ -1279,15 +1287,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // menu button
     private fun initMenuButton(){
+        val intentSignin = Intent(this, SignInActivity::class.java)
         // This part is for  bottomsheet for the menu
         binding.acc.setOnClickListener {
             if (accountID == -1) {
-                var intent = Intent(this, SignInActivity::class.java)
-                startActivity(intent)
+                startActivity(intentSignin)
 
                 if (!isBottomSheetOpen) {
-                    bottomSheet_menu();
-                    isBottomSheetOpen = true; // Set flag to true when BottomSheet is opened
+                    bottomSheet_menu()
+                    isBottomSheetOpen = true // Set flag to true when BottomSheet is opened
                 }
             }
         }
@@ -1410,12 +1418,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     }
 
     private fun fetchNotifications(): MutableList<NotificationClass>{
-        var userHasPendingNotifications : Boolean = true
+        val userHasPendingNotifications : Boolean = true
 
         if (!userHasPendingNotifications)return mutableListOf()
 
         fun fetchNotificationsListFromServer():MutableList<NotificationClass>{
-            var mockListOfNotifications: MutableList<NotificationClass> = mutableListOf(
+            val mockListOfNotifications: MutableList<NotificationClass> = mutableListOf(
                 NotificationClass().apply {
                     id = DataRepository.globalNotificationID++
                     type = 1
@@ -1452,6 +1460,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // for mongodb
+//    private fun initMongoDB(){
+//        DataRepository.clientMongoDB = MongoClient.create(connectionString=System.getenv("MONGO_URL"))
+//    }
+//
+//    private fun getDataBase(databaseName: String): com.mongodb.kotlin.client.coroutine.MongoDatabase{
+//        return DataRepository.clientMongoDB.getDatabase(databaseName = databaseName)
+//    }
+
+
+
 
 
 
@@ -1462,4 +1481,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             createNotification(baseContext, notification)
         }
     }
+
+//    private fun testDatabase(){
+//        var database = getDataBase("sample_mflix")
+//
+//        runBlocking{
+//            database.listCollectionNames().collect{
+//                println(it)
+//            }
+//        }
+//
+////        DataRepository.clientMongoDB
+//    }
 }

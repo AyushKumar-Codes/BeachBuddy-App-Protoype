@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-
 }
 
 android {
@@ -27,6 +26,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -56,4 +56,5 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.0.0")
     implementation("com.google.maps:google-maps-services:0.18.0")
     implementation (libs.android.maps.utils)
+//    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.1.4")
 }
