@@ -65,19 +65,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
-
-
     // for account
     private var accountID: Int = -1
 
 
 
-
-
     // for intents
     private lateinit var intentNotifications : Intent
-
-
 
 
 
@@ -171,12 +165,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // for global variables
     object DataRepository {
-        // MongoDB
-//        lateinit var clientMongoDB: MongoClient
-//        var mongodbConnectionString : String = "mongodb://localhost:27017/"
-
-
-
         // notifications
         lateinit var mainNotificationManager : NotificationManager
         var notificationsList : MutableList<NotificationClass> = mutableListOf()
@@ -184,6 +172,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         val defaultChannelID = "notification_weather"
         val defaultChannelName = "Weather Alerts"
         var globalNotificationID = 1      // an id that will uniquely identify a notification
+        fun deleteNotification(id: Int) {
+            Log.d("Notification", "deleteNotification(id) called for id = ${id}")
+            notificationsList.removeIf { notification ->  // 'notification' is the element of the list
+                notification.id == id  // Check if the notification's id matches the passed id
+            }
+        }
     }
 
 
@@ -222,11 +216,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initNotifications()
         fetchNotifications()
         testNotification()  // #testing
-
-
-        // MongoDB
-//        initMongoDB()
-//        testDatabase()  // #testing
     }
 
 
@@ -1460,19 +1449,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
-    // for mongodb
-//    private fun initMongoDB(){
-//        DataRepository.clientMongoDB = MongoClient.create(connectionString=System.getenv("MONGO_URL"))
-//    }
-//
-//    private fun getDataBase(databaseName: String): com.mongodb.kotlin.client.coroutine.MongoDatabase{
-//        return DataRepository.clientMongoDB.getDatabase(databaseName = databaseName)
-//    }
-
-
-
-
-
 
 
     // TESTING
@@ -1481,16 +1457,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             createNotification(baseContext, notification)
         }
     }
-
-//    private fun testDatabase(){
-//        var database = getDataBase("sample_mflix")
-//
-//        runBlocking{
-//            database.listCollectionNames().collect{
-//                println(it)
-//            }
-//        }
-//
-////        DataRepository.clientMongoDB
-//    }
 }

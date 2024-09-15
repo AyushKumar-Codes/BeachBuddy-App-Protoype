@@ -13,7 +13,9 @@ import com.google.android.material.imageview.ShapeableImageView
 class NotificationAdapter (private var notificationsList: MutableList<NotificationClass>, private val onItemClick: (NotificationClass) -> Unit) : RecyclerView.Adapter<NotificationAdapter.NotificationAdapterHolder>() {
     init{
         Log.d("Notification", "In Top of the NotificationAdapter class with ${itemCount} notifications")
-        notificationsList = notificationsList.reversed() as ArrayList<NotificationClass>
+        if(notificationsList.size>1){
+            notificationsList = notificationsList.reversed() as ArrayList<NotificationClass>
+        }
     }
 
     class NotificationAdapterHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,6 +25,8 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
         val notificationBackgroundColorCode: View = itemView.findViewById(R.id.imageBox)
         val notificationConstraintLayer: ConstraintLayout = itemView.findViewById(R.id.notificationItemConstraintLayout)
         val notificationDeleteButton: Button = itemView.findViewById(R.id.deleteButton)
+
+        var notificationManager = MainActivity.DataRepository.mainNotificationManager
 
         init{
             Log.d("Notification", "Assigned views to variables in adapter holder")
@@ -40,12 +44,14 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
 
             // Handle delete button click, with adapter reference
             notificationDeleteButton.setOnClickListener {
-                Log.d("Notification", "Deleted notification ${notification.id} with title ${notification.title}")
+                Log.d("Notification", "Canceled notification ${notification.id} with title ${notification.title}")
+                notificationManager.cancel(notification.id)
 
-                // Cancel the notification with the specified ID
-                MainActivity.DataRepository.mainNotificationManager.cancel(notification.id)
 
-                adapter.deleteNotification(position)  // Use adapter reference to call the function
+                Log.d("Notification", "Visually deleted notification ${notification.id} with title ${notification.title}")
+                adapter.deleteNotification(position)  // Use adapter reference to call the functions
+
+                MainActivity.DataRepository.deleteNotification(notification.id)
 
                 onItemClick(notification)  // Call the callback for delete action
             }

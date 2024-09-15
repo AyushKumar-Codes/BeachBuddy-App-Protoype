@@ -17,15 +17,16 @@ class NotificationActivity : AppCompatActivity(){
     private lateinit var NotificationRecyclerView: RecyclerView
     private lateinit var notificationsList : MutableList<NotificationClass>
     private lateinit var notificationManager : NotificationManager
+    private lateinit var notificationAdapter : NotificationAdapter
 
 
     override fun onCreate(savedInstanceState : Bundle?){
         super.onCreate(savedInstanceState)
 
         notificationsList = MainActivity.DataRepository.notificationsList
+        notificationManager = MainActivity.DataRepository.mainNotificationManager
 
         Log.d("Notification", "Recieved ${notificationsList?.size} notifications")
-
 
         viewBinding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
 
@@ -35,18 +36,17 @@ class NotificationActivity : AppCompatActivity(){
     private fun initRecycler(){
         Log.d("Notification", "In initRecycler with ${notificationsList.size} notifications")
 
-
         NotificationRecyclerView = viewBinding.notificationRecyclerView
         NotificationRecyclerView.layoutManager = LinearLayoutManager(this)
         NotificationRecyclerView.setHasFixedSize(false)
 
         NotificationRecyclerView.adapter =
             NotificationAdapter(notificationsList) { selectedNotification ->
-                Log.d("Notification", "title : ${selectedNotification.title}")
-//                notificationsList = arrayListOf(selectedNotification)
+                Log.d("Notification", "Selected notification with title : ${selectedNotification.title}")
+                notificationManager.cancel(selectedNotification.id)
             }
 
-        val adapter = NotificationRecyclerView.adapter as NotificationAdapter
-        adapter.notifyDataSetChanged()
+        notificationAdapter = NotificationRecyclerView.adapter as NotificationAdapter
+        notificationAdapter.notifyDataSetChanged()
     }
 }
