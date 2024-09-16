@@ -1,6 +1,7 @@
 package com.prototype.beach
 
 import android.app.NotificationManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -24,14 +25,19 @@ class NotificationActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
 
         notificationsList = MainActivity.DataRepository.notificationsList
-        notificationManager = MainActivity.DataRepository.mainNotificationManager
 
-        Log.d("Notification", "Recieved ${notificationsList?.size} notifications")
+        // Initialize the NotificationManager if it's null
+        if (!::notificationManager.isInitialized) {
+            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        }
+
+        Log.d("Notification", "Received ${notificationsList.size} notifications")
 
         viewBinding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
 
         initRecycler()
     }
+
 
     private fun initRecycler(){
         Log.d("Notification", "In initRecycler with ${notificationsList.size} notifications")

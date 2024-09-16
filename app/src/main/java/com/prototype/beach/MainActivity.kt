@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -71,7 +73,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
     // for intents
+    private lateinit var intentMainActivity : Intent
     private lateinit var intentNotifications : Intent
+    private lateinit var intentAIChatAssistant : Intent
+    private lateinit var intentNotificationDetails : Intent
+
+
 
 
 
@@ -187,6 +194,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // initializing intent (Used for notifications)
+        intentMainActivity = Intent(this, MainActivity::class.java)
+
         // initializing the data-binding
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
@@ -214,8 +224,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
         // notifications
         initNotifications()
-        fetchNotifications()
+        fetchNotifications()    // #testing
         testNotification()  // #testing
+
+
+
+
+        initAIChatAssistant()
     }
 
 
@@ -1384,15 +1399,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         }
     }
 
-    private fun createNotification(context: Context, notificationObject : NotificationClass) {
+    private fun createNotification(context: Context, notificationObject: NotificationClass) {
+        // Create an explicit intent for NotificationDetailsActivity when the notification is clicked
+        intentNotificationDetails = Intent(this, NotificationDetailsActivity::class.java)
+
+        // Use TaskStackBuilder to ensure proper back stack behavior
+        val pendingIntent: PendingIntent = TaskStackBuilder.create(this).run {
+            // Add the MainActivity as the root of the back stack
+            addNextIntentWithParentStack(intentNotifications)
+            // Get the PendingIntent for launching the stack
+            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
+
         // Create a notification
-        val notification = NotificationCompat.Builder(context, DataRepository.defaultChannelID)  // defaultChannelID required
-            .setSmallIcon(R.drawable.volleyball_ball)
+        val notification = NotificationCompat.Builder(context, DataRepository.defaultChannelID)
+            .setSmallIcon(R.drawable.weather)
             .setContentTitle(notificationObject.title)
             .setContentText(notificationObject.message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)  // Ensures it's a high priority notification
-            .build()  // Build the notification
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)  // Set the intent that fires when the user taps the notification
+            .setAutoCancel(true)  // Close the notification when tapped
+            .build()
 
+        // send the notification
         // Checking notification permission (for Android 13+)
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             NotificationManagerCompat.from(context).notify(DataRepository.globalNotificationID++, notification)
@@ -1445,6 +1474,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         return DataRepository.notificationsList
     }
 
+
+
+
+
+    // for AI chat assistant
+    private fun initAIChatAssistant(){
+        intentAIChatAssistant = Intent(this, AIChatAssistantActivity::class.java)
+
+        binding.aiChatAssistantImageView.setImageResource(R.drawable.robot)
+
+        // defines an event when the notification bell is clicked on
+        binding.aiChatAssistantImageView.setOnClickListener{
+            startActivity(intentAIChatAssistant)
+        }
+    }
 
 
 

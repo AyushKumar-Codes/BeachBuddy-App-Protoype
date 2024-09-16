@@ -13,6 +13,8 @@ import com.google.android.material.imageview.ShapeableImageView
 class NotificationAdapter (private var notificationsList: MutableList<NotificationClass>, private val onItemClick: (NotificationClass) -> Unit) : RecyclerView.Adapter<NotificationAdapter.NotificationAdapterHolder>() {
     init{
         Log.d("Notification", "In Top of the NotificationAdapter class with ${itemCount} notifications")
+
+        // condition to avoid bugs when revering a mutable list consisting of only a single item
         if(notificationsList.size>1){
             notificationsList = notificationsList.reversed() as ArrayList<NotificationClass>
         }

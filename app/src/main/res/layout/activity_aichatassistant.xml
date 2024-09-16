@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    tools:context=".AIChatAssistantActivity">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:text="AI Chat Buddy"
+                    android:textAlignment="center"
+                    android:textSize="24sp"
+                    android:gravity="center"
+                    />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+
+            android:padding="8dp"
+
+            android:background="@android:color/white"
+
+            android:gravity="bottom"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            >
+
+            <!-- Text input field -->
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_weight="1"
+
+                android:hint="Type a message..."
+
+                android:background="@drawable/aichatassistant_messageinput_background"
+                android:layout_marginEnd="8dp"
+
+                android:inputType="textCapSentences|textMultiLine"
+
+                android:maxLines="6"
+                android:minLines="1"
+                android:gravity="top|start"
+                android:scrollbars="vertical"
+                android:overScrollMode="ifContentScrolls"
+                android:scrollHorizontally="false"
+                android:ellipsize="end"
+            />
+
+
+            <!-- Send Button -->
+            <ImageButton
+                android:id="@+id/sendButton"
+
+                android:layout_width="40sp"
+                android:layout_height="40sp"
+
+                android:src="@drawable/send_message"
+                android:contentDescription="Send"
+
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+
+                android:padding="8dp"
+                app:tint="@color/ai_dark" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
