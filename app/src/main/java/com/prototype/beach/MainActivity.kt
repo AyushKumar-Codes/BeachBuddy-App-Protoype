@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -52,11 +53,11 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Polyline
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.prototype.beach.databinding.AlertBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
@@ -64,6 +65,7 @@ import java.io.InputStreamReader
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
     // for viewbinding
     lateinit var binding: ActivityMainBinding
+    lateinit var alertBinding: AlertBinding
 
 
 
@@ -76,8 +78,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private lateinit var intentMainActivity : Intent
     private lateinit var intentNotifications : Intent
     private lateinit var intentAIChatAssistant : Intent
-
-
 
 
 
@@ -139,6 +139,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // recycler for alerts
+    private lateinit var notificationRecyclerView: RecyclerView
+    private lateinit var notificationAdapter: NotificationAdapter
+
+
+
     // Data
     private lateinit var AllBeachesList: MutableList<Beach>
 
@@ -194,10 +200,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // restrict screen orientation to portrait only
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+
         // initializing intent (Used for notifications)
         intentMainActivity = Intent(this, MainActivity::class.java)
 
         // initializing the data-binding
+        alertBinding = DataBindingUtil.setContentView(this, R.layout.alert)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         initMap()
@@ -357,7 +367,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
         // Set initial camera position to India
         val indiaLatLng = LatLng(20.5937, 78.9629) // Approximate coordinates of the center of India
-        val initialZoomLevel = 5.0f // Adjust zoom level as per your requirement
+        val initialZoomLevel = 4.0f // Adjust zoom level as per your requirement
 
         // Move the camera to the specified location
         mGoogleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(indiaLatLng, initialZoomLevel))
@@ -632,8 +642,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         // Set the map's camera position to the current location of the device
         val currentLatLng = LatLng(location.latitude, location.longitude)
 
-        // Optional: Add a marker at the current location
-
+        // zoom to the current location
+        mGoogleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14.0F))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -1088,6 +1098,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     }
 
     private fun bottomSheet_alert() {
+        fun initFilteredAlertsNotification(){
+            Log.d("Alerts", "In initRecycler with ${DataRepository.notificationsList.size} notifications")
+
+            var notificationsListFiltered =
+                DataRepository.notificationsList.filter { notification ->
+                    notification.type == 1 // Keep only notifications with type 1
+                }.toMutableList()
+            Log.d("Alerts", "Filtered list has been set with now only ${notificationsListFiltered.size} notifications")
+
+
+
+            notificationRecyclerView = alertBinding.notificationRecyclerView
+            notificationRecyclerView.layoutManager = LinearLayoutManager(this)
+            notificationRecyclerView.setHasFixedSize(false)
+
+            notificationRecyclerView.adapter =
+                NotificationAdapter(notificationsListFiltered) { selectedNotification ->
+                    Log.d("Alerts", "Selected notification with title : ${selectedNotification.title}")
+                }
+
+            notificationAdapter = notificationRecyclerView.adapter as NotificationAdapter
+
+            notificationAdapter.notifyDataSetChanged()
+            Log.d("Alerts", "After notifyDataSetChanged()")
+            Log.d("Alerts", "notificationAdapter.itemCount: ${notificationAdapter.itemCount}")
+        }
+
+        initFilteredAlertsNotification()
+
         val bottomSheet = binding.bottomAlert
         alertBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         alertBottomSheetBehavior?.peekHeight = 200
@@ -1370,6 +1409,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // for notifications
     private fun initNotifications(){
+        // Define a constant for the notification permission request code
+        val notificationPermissionCode = 101
+
+        // Check and request POST_NOTIFICATIONS permission for Android 13 (API level 33) and above
+        Log.d("Notification", "Checking Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Log.d("Notification", "Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU is TRUE")
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d("Notification", "Permission was not granted prior")
+                Log.d("Notification", "Requesting permission Now")
+                // Request the POST_NOTIFICATIONS permission if it is not granted
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    notificationPermissionCode
+                )
+            }
+        }
+        else{
+            Log.d("Notification", "Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU is False")
+        }
+
+
         intentNotifications = Intent(this, NotificationActivity::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1410,8 +1474,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             // Add the parent activity (MainActivity) to the back stack
             addParentStack(MainActivity::class.java)
 
-            // Add the actual details activity to the stack
+            // Add the actual activity to the stack
             addNextIntent(intentNotifications)
+
             // Get the PendingIntent for launching the stack
             getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
@@ -1474,7 +1539,38 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                     colorCode = "green"
                 }
             )
-            return mockListOfNotifications
+
+            val mockListOfRandomNotifications: MutableList<NotificationClass> = mutableListOf()
+            for (i in 1..20) {
+                mockListOfRandomNotifications.add(
+                    NotificationClass().apply {
+                        id = DataRepository.globalNotificationID++
+                        type = (1..3).random() // Random type (1, 2, or 3) for variety
+                        title = when (type) {
+                            1 -> "Stormy Clouds Alert"
+                            2 -> "Update on Planned Trip"
+                            else -> "Great Weather"
+                        }
+                        message = when (type) {
+                            1 -> "Stormy Clouds are expected at your planned location"
+                            2 -> "Suitable Weather expected at your planned location tomorrow"
+                            else -> "Great weather for trying volleyball"
+                        }
+                        mainImageID = when (type) {
+                            1 -> R.drawable.exclamation
+                            2 -> R.drawable.calendar
+                            else -> R.drawable.volleyball_ball
+                        }
+                        colorCode = when (type) {
+                            1 -> "red"
+                            2 -> "blue"
+                            else -> "green"
+                        }
+                    }
+                )
+            }
+
+            return mockListOfRandomNotifications
         }
 
         DataRepository.notificationsList = fetchNotificationsListFromServer()

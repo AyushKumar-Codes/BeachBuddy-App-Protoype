@@ -107,6 +107,7 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
         for(notification in notificationsList){
             Log.d("Notification Adapter", "Added Notification with id ${notification.id}")
         }
+
         notifyDataSetChanged()  // Notify the RecyclerView to refresh
     }
 
