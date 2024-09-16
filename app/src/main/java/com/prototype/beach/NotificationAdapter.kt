@@ -12,7 +12,7 @@ import com.google.android.material.imageview.ShapeableImageView
 
 class NotificationAdapter (private var notificationsList: MutableList<NotificationClass>, private val onItemClick: (NotificationClass) -> Unit) : RecyclerView.Adapter<NotificationAdapter.NotificationAdapterHolder>() {
     init{
-        Log.d("Notification", "In Top of the NotificationAdapter class with ${itemCount} notifications")
+        Log.d("Notification Adapter", "In Top of the NotificationAdapter class with ${itemCount} notifications")
 
         // condition to avoid bugs when revering a mutable list consisting of only a single item
         if(notificationsList.size>1){
@@ -31,7 +31,7 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
         var notificationManager = MainActivity.DataRepository.mainNotificationManager
 
         init{
-            Log.d("Notification", "Assigned views to variables in adapter holder")
+            Log.d("Notification Adapter", "Assigned views to variables in adapter holder")
         }
 
         fun bind(notification: NotificationClass, onItemClick: (NotificationClass) -> Unit, position: Int, adapter: NotificationAdapter) {
@@ -40,17 +40,17 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
 
             // Handle notification click
             notificationConstraintLayer.setOnClickListener {
-                Log.d("Notification", "Pressed ${notification.title} notification with message ${notification.message}")
+                Log.d("Notification Adapter", "Pressed ${notification.title} notification with message ${notification.message}")
                 onItemClick(notification)
             }
 
             // Handle delete button click, with adapter reference
             notificationDeleteButton.setOnClickListener {
-                Log.d("Notification", "Canceled notification ${notification.id} with title ${notification.title}")
+                Log.d("Notification Adapter", "Canceled notification ${notification.id} with title ${notification.title}")
                 notificationManager.cancel(notification.id)
 
 
-                Log.d("Notification", "Visually deleted notification ${notification.id} with title ${notification.title}")
+                Log.d("Notification Adapter", "Visually deleted notification ${notification.id} with title ${notification.title}")
                 adapter.deleteNotification(position)  // Use adapter reference to call the functions
 
                 MainActivity.DataRepository.deleteNotification(notification.id)
@@ -63,7 +63,7 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationAdapter.NotificationAdapterHolder {
         val itemview = LayoutInflater.from(parent.context).inflate(R.layout.notification_item, parent, false)
-        Log.d("Notification", "Assigned itemview as a view inside onCreateViewHolder()")
+        Log.d("Notification Adapter", "Assigned itemview as a view inside onCreateViewHolder()")
         return NotificationAdapter.NotificationAdapterHolder(
             itemview
         )
@@ -91,32 +91,35 @@ class NotificationAdapter (private var notificationsList: MutableList<Notificati
 
         holder.bind(currentNotification, onItemClick, position, this)
 
-        Log.d("Notification", "Added Notification recyclerItem with id ${currentNotification.id}")
+        Log.d("Notification Adapter", "Added Notification recyclerItem with id ${currentNotification.id}")
     }
 
     fun setFilteredList(filteredList: List<NotificationClass>) {
-        Log.d("Notification", "In setFilteredList() with ${itemCount} notifications")
-        Log.d("Notification", "In setFilteredList(), filteredList.size: ${filteredList.size}")
-        Log.d("Notification", "In setFilteredList(), notificationsList.size: ${notificationsList.size}")
+        Log.d("Notification Adapter", "In setFilteredList() with ${itemCount} notifications")
+        Log.d("Notification Adapter", "In setFilteredList(), filteredList.size: ${filteredList.size}")
+        Log.d("Notification Adapter", "In setFilteredList(), notificationsList.size: ${notificationsList.size}")
 
         notificationsList.clear()  // Clear the current list
         notificationsList.addAll(filteredList)  // Add the filtered list
 
-        Log.d("Notification", "In setFilteredList(), notificationsList.size: ${notificationsList.size}")
+        Log.d("Notification Adapter", "In setFilteredList(), notificationsList.size: ${notificationsList.size}")
 
         for(notification in notificationsList){
-            Log.d("Notification", "Added Notification with id ${notification.id}")
+            Log.d("Notification Adapter", "Added Notification with id ${notification.id}")
         }
         notifyDataSetChanged()  // Notify the RecyclerView to refresh
     }
 
     fun deleteNotification(position: Int) {
+        Log.d("Notification Adapter", "Removed item at from list at position: ${position}")
         // Remove the item from the data source (notificationsList)
         notificationsList.removeAt(position)
 
+        Log.d("Notification Adapter", "Removed item at position: ${position}")
         // Notify the adapter that an item has been removed
         notifyItemRemoved(position)
 
+        Log.d("Notification Adapter", "notifyItemRangeChanged")
         // Notify the adapter about item range changes (optional but recommended)
         notifyItemRangeChanged(position, notificationsList.size)
     }

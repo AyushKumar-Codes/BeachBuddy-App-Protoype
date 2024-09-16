@@ -26,10 +26,8 @@ class NotificationActivity : AppCompatActivity(){
 
         notificationsList = MainActivity.DataRepository.notificationsList
 
-        // Initialize the NotificationManager if it's null
-        if (!::notificationManager.isInitialized) {
-            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        }
+        Log.d("Notification", "Retrieving the mainNotificationManager from MainActivity")
+        notificationManager = MainActivity.DataRepository.mainNotificationManager
 
         Log.d("Notification", "Received ${notificationsList.size} notifications")
 

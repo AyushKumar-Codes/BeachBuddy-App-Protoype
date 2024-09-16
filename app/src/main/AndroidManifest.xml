@@ -33,22 +33,18 @@
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity android:name=".SignInActivity"
-            android:exported="false"/>
-
-        <activity android:name=".NotificationActivity"
             android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity"/>
         </activity>
 
-        <activity android:name=".NotificationDetailsActivity"
+        <activity android:name=".NotificationActivity"
             android:exported="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -56,7 +52,11 @@
         </activity>
 
         <activity android:name=".AIChatAssistantActivity"
-            android:exported="false"/>
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
 
     </application>
 

@@ -76,7 +76,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private lateinit var intentMainActivity : Intent
     private lateinit var intentNotifications : Intent
     private lateinit var intentAIChatAssistant : Intent
-    private lateinit var intentNotificationDetails : Intent
 
 
 
@@ -167,6 +166,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private lateinit var kiteIcon: Bitmap
     private lateinit var sunbathIcon: Bitmap
     private lateinit var beachIcon: Bitmap
+
 
 
 
@@ -1394,19 +1394,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.notificationImageView.setImageResource(R.drawable.notification_bell_alarm)
 
         // defines an event when the notification bell is clicked on
-        binding.notificationImageView.setOnClickListener{
+        binding.notificationImageView.setOnClickListener {
+            // Start the notifications activity
             startActivity(intentNotifications)
+
+            // Logging statements
+            Log.d("Notification", "After setOnClickListener(), now in MainActivity")
         }
+
     }
 
     private fun createNotification(context: Context, notificationObject: NotificationClass) {
-        // Create an explicit intent for NotificationDetailsActivity when the notification is clicked
-        intentNotificationDetails = Intent(this, NotificationDetailsActivity::class.java)
-
         // Use TaskStackBuilder to ensure proper back stack behavior
         val pendingIntent: PendingIntent = TaskStackBuilder.create(this).run {
-            // Add the MainActivity as the root of the back stack
-            addNextIntentWithParentStack(intentNotifications)
+            // Add the parent activity (MainActivity) to the back stack
+            addParentStack(MainActivity::class.java)
+
+            // Add the actual details activity to the stack
+            addNextIntent(intentNotifications)
             // Get the PendingIntent for launching the stack
             getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
@@ -1419,12 +1424,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)  // Set the intent that fires when the user taps the notification
             .setAutoCancel(true)  // Close the notification when tapped
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
 
         // send the notification
         // Checking notification permission (for Android 13+)
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            NotificationManagerCompat.from(context).notify(DataRepository.globalNotificationID++, notification)
+            NotificationManagerCompat.from(context).notify(notificationObject.id, notification)
         } else {
             // Optionally, request notification permission for Android 13+
             ActivityCompat.requestPermissions(
@@ -1441,6 +1447,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         if (!userHasPendingNotifications)return mutableListOf()
 
         fun fetchNotificationsListFromServer():MutableList<NotificationClass>{
+
             val mockListOfNotifications: MutableList<NotificationClass> = mutableListOf(
                 NotificationClass().apply {
                     id = DataRepository.globalNotificationID++
