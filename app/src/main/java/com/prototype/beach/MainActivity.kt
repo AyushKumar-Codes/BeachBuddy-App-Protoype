@@ -322,6 +322,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 beach.latitude = beachJson.latitude
                 beach.longitude = beachJson.longitude
                 beach.boundary = beachJson.boundary
+                Log.d("Entered beach", "beach.boundary.size: ${beach.boundary.size}")
 
                 Log.d("Entered beach", "id:${beach.id}\tname:${beach.name}")
                 AllBeachesList.add(beach)
@@ -562,6 +563,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.suggestionRecyclerViewer.visibility = View.VISIBLE
         binding.menu.visibility = View.VISIBLE
         binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
+        moveCameraToDefaultPosition()
     }
 
     private fun initBeachesTrie(){
@@ -748,12 +750,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private fun createPolygonsFromAnArray(beaches: List<Beach>) {
         for (beach in beaches) {
             val polygonOptions = PolygonOptions()
-                .fillColor(Color.argb(108,227, 255, 255)) // Semi-transparent fill color (ARGB format)
+                .fillColor(getRandomStrokeColor())
                 .strokeColor(Color.argb(205,129, 131, 140)) // Opaque stroke color (ARGB format)
                 .strokeWidth(5f)
 
             for (coordinate in beach.boundary) {
-                val latLng = LatLng(coordinate.latitude, coordinate.longitude)
+                Log.d("createPolygonsFromAnArray", "Created polygon at ${coordinate.latitude}, ${coordinate.longitude}")
+                val latLng = LatLng(coordinate.longitude, coordinate.latitude)
                 polygonOptions.add(latLng)
             }
 
