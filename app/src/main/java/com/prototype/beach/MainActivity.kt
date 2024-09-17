@@ -143,6 +143,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+
+    // Recycler for places
+    private lateinit var PlaceRecyclerView: RecyclerView
+    private lateinit var PlacesList: MutableList<String>
+    private lateinit var placeTrie:Trie
+
+
+
     // recycler for alerts
     private lateinit var notificationRecyclerView: RecyclerView
     private lateinit var notificationAdapter: NotificationAdapter
@@ -151,6 +159,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // Data
     private lateinit var AllBeachesList: MutableList<Beach>
+    private lateinit var AllPlacesList: MutableList<String>
 
 
 
@@ -217,8 +226,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initMap()
 
         initSearchButton()
+        // for searching beaches
         initBeachesRecycler()
         initBeachesTrie()
+
+        // for searching places
+        initPlacesRecycler()
+        initPlacesTrie()
+        showSuggestions(false)
 
         initIncludeWeather()
         initNavigationButton()
@@ -362,6 +377,228 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         return viableBeaches.map { it.id }
     }
 
+    private fun initPlacesRecycler(){
+        PlacesList = mutableListOf()
+        AllPlacesList = mutableListOf()
+
+        AllPlacesList = mutableListOf(
+            "Goa",
+            "Kovalam",
+            "Varkala",
+            "Alleppey",
+            "Gokarna",
+            "Pondicherry",
+            "Chennai",
+            "Mahabalipuram",
+            "Rameswaram",
+            "Puri",
+            "Digha",
+            "Mandarmani",
+            "Vizag (Visakhapatnam)",
+            "Havelock Island (Andaman)",
+            "Neil Island (Andaman)",
+            "Diu",
+            "Somnath",
+            "Dwarka",
+            "Alibaug",
+            "Kashid",
+            "Ratnagiri",
+            "Ganpatipule",
+            "Tarkarli",
+            "Karwar",
+            "Mangalore",
+            "Bekal",
+            "Kanyakumari",
+            "Thiruvananthapuram",
+            "Murudeshwar",
+            "Chandipur"
+        )
+
+        PlaceRecyclerView = binding.includesearch.placesRecyclerView
+        PlaceRecyclerView.layoutManager = LinearLayoutManager(this)
+        PlaceRecyclerView.setHasFixedSize(false)
+
+
+        PlaceRecyclerView.adapter = PlaceAdapter(PlacesList){ selectedPlace ->
+            Log.d("testing", "Selected Place: ${selectedPlace}")
+            PlacesList = mutableListOf(selectedPlace)
+            showSuggestions(false)
+            searchPlaces(PlacesList)
+        }
+    }
+
+    private fun searchBeaches(Beaches: MutableList<Beach>) {
+        binding.search.setIconified(true)
+        binding.search.isFocusable = false
+        binding.search.clearFocus()
+        binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+        updateSearchTitle(Beaches)
+
+        clearMarkersFromAnArray()
+        createMarkersFromAnArray(Beaches)
+        createPolygonsFromAnArray(Beaches)
+        showSuggestions(false)
+
+        moveCameraFromAnArray(Beaches)
+        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
+        binding.menu.visibility = View.VISIBLE
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
+    }
+
+    private fun searchPlaces(Places: MutableList<String>) {
+        updateSearchTitlePlaces(Places)
+
+        showSuggestions(false)
+
+
+
+        createMarkersFromAnArray(Beaches)
+        createPolygonsFromAnArray(Beaches)
+
+        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
+        binding.menu.visibility = View.VISIBLE
+        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
+    }
+
+    private fun initBeachesTrie(){
+        beachTrie = Trie()
+        for(beach in AllBeachesList){
+            beachTrie.insert(beach.name)
+
+            Log.d("initBeachTrie", "Added ${beach.name} as beachTrie item")  // #Debugging
+        }
+    }
+
+    private fun initPlacesTrie(){
+        placeTrie = Trie()
+        for(place in AllPlacesList){
+            placeTrie.insert(place)
+
+            Log.d("initBeachTrie", "Added place as placeTrie item")  // #Debugging
+        }
+    }
+
+    private fun initSearchButton(){
+        // on opening the search bar
+        binding.search.setOnSearchClickListener {
+            showSuggestions()
+        }
+
+        // on closing the search bar
+        binding.search.setOnCloseListener {
+            showSuggestions(false)
+            clearMarkersFromAnArray()
+            false  // Return false if you want the default behavior to still occur
+        }
+
+        // on changing the text of the query
+        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            fun computeSuggestions(newText:String?) : MutableList<Beach>{
+                binding.suggestionRecyclerViewer.visibility = View.GONE
+                if(newText.isNullOrEmpty()){
+                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
+                    return mutableListOf()
+                }
+
+                val viableBeaches : MutableList<Beach>
+
+                val viableNames = beachTrie.searchByPrefix(newText)  // Search for viable names using Trie
+                for (viableName in viableNames) Log.d("computeSuggestions","Viable name: ${viableName}")  // #Debuggin
+
+                val viableBeachesID = getBeachIdsFromNames(viableNames)  // Get beach IDs based on the names
+                for (viableBeach in viableBeachesID) Log.d("computeSuggestions","Viable beach id: ${viableBeach}")  // #Debuggin
+
+                viableBeaches = viableBeachesID.map { beachId ->
+                    AllBeachesList.find { it.id == beachId }?: Beach()  // Find full beach object by ID
+                }.toMutableList()
+
+                updateSuggestionsUI(viableBeaches)
+                return viableBeaches
+            }
+
+            fun computeSuggestionsPlaces(newText:String?) : MutableList<String>{
+                binding.suggestionRecyclerViewer.visibility = View.GONE
+
+                if(newText.isNullOrEmpty()){
+                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
+                    return mutableListOf()
+                }
+
+                val viablePlaces = placeTrie.searchByPrefix(newText).toMutableList()  // Search for viable names using Trie
+
+                for (viablePlace in viablePlaces) {
+                    Log.d("computeSuggestionsPlaces","Viable place: ${viablePlace}") // #Debuggin
+                }
+
+                updateSuggestionsPlacesUI(viablePlaces)
+                return viablePlaces
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query.isNullOrEmpty()) {
+                    Log.d("Query Status", "Query is empty")
+                    return true
+                }
+
+                // Perform the search in a background coroutine
+                CoroutineScope(Dispatchers.Main + Job()).launch {
+                    val suggestionsBeaches = withContext(Dispatchers.IO) {
+                        computeSuggestions(query)
+                    }
+                    searchBeaches(suggestionsBeaches)
+
+                    val suggestionPlaces = withContext(Dispatchers.IO) {
+                        computeSuggestionsPlaces(query)
+                    }
+                    searchPlaces(suggestionPlaces)
+                }
+
+                binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val characterCount = newText?.length ?: 0
+                Log.d("onQueryTextChange", "Character count: ${characterCount}")
+                Log.d("onQueryTextChange", "Word changed to: ${newText}")
+
+                showSuggestions(true)
+
+                updateSearchTitlePlaces(computeSuggestionsPlaces(newText))
+                updateSearchTitle(computeSuggestions(newText))
+                return false
+            }
+        })
+    }
+
+    private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
+        val adapter = BeachRecyclerView.adapter as BeachAdapter
+
+
+        Log.d("In updateSuggestionsUI","BeachesList (before setFilteredList()): ${matchingBeaches.size}")
+        adapter.setFilteredList(matchingBeaches)
+
+        for(beach in matchingBeaches){
+            Log.d("In updateSuggestionsUI","Matched Name: ${beach.name}")
+        }
+        Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
+    }
+
+    private fun updateSuggestionsPlacesUI(matchingPlaces:List<String>) {
+        val adapter = PlaceRecyclerView.adapter as PlaceAdapter
+
+
+        Log.d("In updateSuggestionsPlacesUI","matchingPlaces (before setFilteredList()): ${matchingPlaces.size}")
+        adapter.setFilteredList(matchingPlaces)
+
+        for(place in matchingPlaces){
+            Log.d("In updateSuggestionsPlacesUI","Matched Place: ${place}")
+        }
+
+        Log.d("In updateSuggestionsPlacesUI","matchingBeaches (after setFilteredList()): ${matchingPlaces.size}")
+    }
+
+
 
 
 
@@ -402,24 +639,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             binding.includednavi.navi.clearChecked()
             binding.bottommenu.clearChecked()
         }
-    }
-
-    private fun searchBeaches(Beaches: MutableList<Beach>) {
-        binding.search.setIconified(true)
-        binding.search.isFocusable = false
-        binding.search.clearFocus()
-        binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
-        updateSearchTitle(Beaches)
-
-        clearMarkersFromAnArray()
-        createMarkersFromAnArray(Beaches)
-         createPolygonsFromAnArray(Beaches)
-        showSuggestions(false)
-
-        moveCameraFromAnArray(Beaches)
-        binding.suggestionRecyclerViewer.visibility = View.VISIBLE
-        binding.menu.visibility = View.VISIBLE
-        binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
     }
 
     private fun createPolygonsFromAnArray(beaches: List<Beach>) {
@@ -481,6 +700,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.includesearch.RecentSearchesTextView.text = resultString
     }
 
+    private fun updateSearchTitlePlaces(Places: MutableList<String>){
+        Log.d("In updateSearchTitle", "Changing Search results text to ${Places.size}")
+        var resultString = "Found ${Places.size} places"
+        if(Places.size == 1){resultString = "Found ${Places.size} place"}
+        else if(Places.size == 0 && binding.search.query.isEmpty()){resultString = "Explore Places"}
+        else if(Places.size == 0){resultString = "Found no place"}
+        binding.includesearch.placesTextView.text = resultString
+    }
+
     private fun clearMarkersFromAnArray() {
         for (markerObj in mapMarkers_Objects){
             Log.d("Marker Deletion", "Deleted ${markerObj.title}")    // #Debugger
@@ -488,96 +716,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             mGoogleMap!!.clear()
         }
         mapMarkers_Objects = mutableListOf(MarkerOptions())
-    }
-
-    private fun initBeachesTrie(){
-        beachTrie = Trie()
-        for(beach in AllBeachesList){
-            beachTrie.insert(beach.name)
-
-            Log.d("initBeachTrie", "Added ${beach.name} as beachTrie")  // #Debugging
-        }
-    }
-
-    private fun initSearchButton(){
-        // on opening the search bar
-        binding.search.setOnSearchClickListener {
-            showSuggestions()
-        }
-
-        // on closing the search bar
-        binding.search.setOnCloseListener {
-            showSuggestions(false)
-            clearMarkersFromAnArray()
-            false  // Return false if you want the default behavior to still occur
-        }
-
-        // on changing the text of the query
-        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            fun computeSuggestions(newText:String?) : MutableList<Beach>{
-                binding.suggestionRecyclerViewer.visibility = View.GONE
-                if(newText.isNullOrEmpty()){
-                    updateSuggestionsUI(emptyList())  // Clear suggestions if no texts
-                    return mutableListOf()
-                }
-
-                val viableBeaches : MutableList<Beach>
-
-                val viableNames = beachTrie.searchByPrefix(newText)  // Search for viable names using Trie
-                for (viableName in viableNames) Log.d("computeSuggestions","Viable name: ${viableName}")  // #Debuggin
-
-                val viableBeachesID = getBeachIdsFromNames(viableNames)  // Get beach IDs based on the names
-                for (viableBeach in viableBeachesID) Log.d("computeSuggestions","Viable beach id: ${viableBeach}")  // #Debuggin
-
-                viableBeaches = viableBeachesID.map { beachId ->
-                    AllBeachesList.find { it.id == beachId }?: Beach()  // Find full beach object by ID
-                }.toMutableList()
-
-                updateSuggestionsUI(viableBeaches)
-                return viableBeaches
-            }
-
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query.isNullOrEmpty()) {
-                    Log.d("Query Status", "Query is empty")
-                    return true
-                }
-
-                // Perform the search in a background coroutine
-                CoroutineScope(Dispatchers.Main + Job()).launch {
-                    val suggestions = withContext(Dispatchers.IO) {
-                        computeSuggestions(query)
-                    }
-                    searchBeaches(suggestions)
-                }
-
-                binding.includesearch.RecentSearchesTextView.text = "Explore Beaches"
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                val characterCount = newText?.length ?: 0
-                Log.d("onQueryTextChange", "Character count: ${characterCount}")
-                Log.d("onQueryTextChange", "Word changed to: ${newText}")
-
-                showSuggestions(true)
-                updateSearchTitle(computeSuggestions(newText))
-                return false
-            }
-        })
-    }
-
-    private fun updateSuggestionsUI(matchingBeaches:List<Beach>){
-        val adapter = BeachRecyclerView.adapter as BeachAdapter
-
-
-        Log.d("In updateSuggestionsUI","BeachesList (before setFilteredList()): ${matchingBeaches.size}")
-        adapter.setFilteredList(matchingBeaches)
-
-        for(beach in matchingBeaches){
-            Log.d("In updateSuggestionsUI","Matched Name: ${beach.name}")
-        }
-        Log.d("In updateSuggestionsUI","matchingBeaches (after setFilteredList()): ${matchingBeaches.size}")
     }
 
     private fun navigation(markercord: LatLng , title : String?) {

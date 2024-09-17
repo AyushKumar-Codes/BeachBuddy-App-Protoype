@@ -20,6 +20,7 @@ playServicesMapsVersion = "18.0.2"
 volley = "1.2.1"
 gamesActivity = "3.0.5"
 toolsCore = "1.0.0-alpha09"
+filamentAndroid = "1.17.1"
 
 [libraries]
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
@@ -41,6 +42,7 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 androidx-games-activity = { group = "androidx.games", name = "games-activity", version.ref = "gamesActivity" }
 androidx-tools-core = { group = "androidx.privacysandbox.tools", name = "tools-core", version.ref = "toolsCore" }
+filament-android = { group = "com.google.ar.sceneform", name = "filament-android", version.ref = "filamentAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
