@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.button.MaterialButtonToggleGroup
+    android:id="@+id/toggleactivitygroup"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="4dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/toggleactivity"
+        style="@style/ToggleButtonWithOutline"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="1"
+        android:text="Jet Skiing"
+        android:fontFamily="@font/belanosima_semibold"
+        app:icon="@drawable/act"
+        app:iconGravity="top"
+        app:iconSize="30dp"
+        android:textSize="15sp"
+        app:cornerRadius="16dp"
+    app:strokeColor="?attr/colorControlNormal"
+    app:strokeWidth="1dp"
+
+    />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
