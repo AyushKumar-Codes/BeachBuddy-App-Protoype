@@ -11,8 +11,7 @@
             android:id="@+id/general_parentConstraintLayout"
 
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/main_colorgradient">
+            android:layout_height="match_parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/general_aboutConstraintLayout"
@@ -184,8 +183,7 @@
                         android:id="@+id/general_currentWeather_skyCard_ConstraintLayout"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:background="@drawable/currentweather_card"
-                        >
+                        android:background="@drawable/cards_activities">
 
                         <ImageView
                             android:id="@+id/general_currentWeather_skyCard_Image"

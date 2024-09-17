@@ -57,6 +57,7 @@ import com.prototype.beach.databinding.AlertBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
@@ -78,6 +79,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private lateinit var intentMainActivity : Intent
     private lateinit var intentNotifications : Intent
     private lateinit var intentAIChatAssistant : Intent
+    private lateinit var intentBeach : Intent
+    private lateinit var intentBigAlert : Intent
+
 
 
 
@@ -217,6 +221,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initBeachesTrie()
 
         initIncludeWeather()
+        initNavigationButton()
         initMenuButton()
 
         initBottomMenu()
@@ -238,9 +243,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         testNotification()  // #testing
 
 
+        // big alerts
+        initBigAlert()
+
+
 
 
         initAIChatAssistant()
+
+
+
+        // TESTING
+        testInvokeAlert()
     }
 
 
@@ -571,7 +585,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.navibutton.visibility = View.VISIBLE
         binding.includednavi.navi.clearChecked()
         destination = markercord
-
     }
 
     private fun drawRoute(currentLoc: LatLng, destination: LatLng) {
@@ -1289,44 +1302,53 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     private fun initIncludeWeather(){
     binding.includeweather.we.setOnClickListener() {
         binding.includeweather.we.setImageResource(R.drawable.wd)
+        }
     }
 
-    binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
-        // Check if the specific button is toggled
-        if (checkedId == binding.includednavi.naviButton.id) {
-            if (isChecked) {
-                // Button is checked: Call drawRoute
-                drawRoute(currentLoc, destination)
-                binding.includednavi.naviButton.text = "Cancel"
+    private fun initNavigationButton(){
+        intentBeach = Intent(this, BeachActivity::class.java)
+        binding.includednavi.viewBeach.setOnClickListener{
+            Log.d("navigation", "trying to start activity BeachActivity")
+            startActivity(intentBeach)
+            Log.d("navigation", "In mainActivity from BeachActivity")
+        }
 
-                val startLocation = Location("start").apply {
-                    latitude = currentLoc.latitude
-                    longitude = currentLoc.longitude
+        binding.includednavi.navi.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            // Check if the specific button is toggled
+            if (checkedId == binding.includednavi.naviButton.id) {
+                if (isChecked) {
+                    // Button is checked: Call drawRoute
+                    drawRoute(currentLoc, destination)
+                    binding.includednavi.naviButton.text = "Cancel"
+
+                    val startLocation = Location("start").apply {
+                        latitude = currentLoc.latitude
+                        longitude = currentLoc.longitude
+                    }
+
+                    val endLocation = Location("end").apply {
+                        latitude = destination.latitude
+                        longitude = destination.longitude
+                    }
+
+                    // Calculate the distance in meters
+                    val distance = startLocation.distanceTo(endLocation)
+
+                    binding.includednavi.placename.text = placename
+                    val formattedDistance = String.format("%.2f", distance)
+                    binding.includednavi.dis.text = "$formattedDistance meters"
+
+                    binding.includednavi.navcard.visibility = View.VISIBLE
+
+                } else {
+                    binding.includednavi.naviButton.text = "Find Route"
+                    // Button is unchecked: Call clearPreviousPolylines
+                    binding.includednavi.navcard.visibility = View.GONE
+                    clearPreviousPolylines()
                 }
-
-                val endLocation = Location("end").apply {
-                    latitude = destination.latitude
-                    longitude = destination.longitude
-                }
-
-                // Calculate the distance in meters
-                val distance = startLocation.distanceTo(endLocation)
-
-                binding.includednavi.placename.text = placename
-                val formattedDistance = String.format("%.2f", distance)
-                binding.includednavi.dis.text = "$formattedDistance meters"
-
-                binding.includednavi.navcard.visibility = View.VISIBLE
-
-            } else {
-                binding.includednavi.naviButton.text = "Find Route"
-                // Button is unchecked: Call clearPreviousPolylines
-                binding.includednavi.navcard.visibility = View.GONE
-                clearPreviousPolylines()
             }
         }
     }
-}
 
     // menu button
     private fun initMenuButton(){
@@ -1342,6 +1364,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 }
             }
         }
+    }
+
+    private fun showBottomMenu(state : Boolean){
+        if(state){
+            binding.bottommenu.visibility = View.VISIBLE
+
+            // making navi button menu invisible
+            binding.navibutton.visibility = View.VISIBLE
+            return@showBottomMenu
+        }
+        binding.bottommenu.visibility = View.GONE
+
+        // making navi button menu visible
+        binding.navibutton.visibility = View.GONE
     }
 
 
@@ -1517,8 +1553,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 NotificationClass().apply {
                     id = DataRepository.globalNotificationID++
                     type = 1
-                    title = "Stormy Clouds Alert"
-                    message = "Stormy Clouds are expected at your planned location"
+                    title = "Hurrican Alert"
+                    message = "Category 3 Hurricane is expected at your planned location"
                     mainImageID = R.drawable.exclamation
                     colorCode = "red"
                 },
@@ -1541,18 +1577,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             )
 
             val mockListOfRandomNotifications: MutableList<NotificationClass> = mutableListOf()
-            for (i in 1..20) {
+            for (i in 1..10) {
                 mockListOfRandomNotifications.add(
                     NotificationClass().apply {
                         id = DataRepository.globalNotificationID++
                         type = (1..3).random() // Random type (1, 2, or 3) for variety
                         title = when (type) {
-                            1 -> "Stormy Clouds Alert"
+                            1 -> "Hurrican Alert"
                             2 -> "Update on Planned Trip"
                             else -> "Great Weather"
                         }
                         message = when (type) {
-                            1 -> "Stormy Clouds are expected at your planned location"
+                            1 -> "Category 3 Hurricane is expected at your planned location"
                             2 -> "Suitable Weather expected at your planned location tomorrow"
                             else -> "Great weather for trying volleyball"
                         }
@@ -1581,6 +1617,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // for big alerts
+    private fun initBigAlert(){
+        intentBigAlert = Intent(this, BigAlertActivity::class.java)
+    }
+
+
+
+
+
     // for AI chat assistant
     private fun initAIChatAssistant(){
         intentAIChatAssistant = Intent(this, AIChatAssistantActivity::class.java)
@@ -1600,8 +1645,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     // TESTING
     fun testNotification(){     // #testing
-        for (notification in DataRepository.notificationsList){
-            createNotification(baseContext, notification)
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(5000L) // Delay is in milliseconds (5000ms = 5 seconds)
+            var isAlerted = false
+            for (notification in DataRepository.notificationsList) {
+                createNotification(baseContext, notification)
+                if (notification.type == 1 && !isAlerted){
+                    isAlerted = true
+                    startActivity(intentBigAlert)
+                    break       // #testing
+                }
+
+                // Add a 5-second delay between each notification
+                delay(5000L) // Delay is in milliseconds (5000ms = 5 seconds)
+            }
+        }
+    }
+
+    fun testInvokeAlert(){
+        binding.invokeAlert.setOnClickListener{
+            createNotification(baseContext, NotificationClass().apply {
+                id = DataRepository.globalNotificationID++
+                type = 1
+                title = "Hurrican Alert"
+                message = "Category 3 Hurricane is expected"
+                mainImageID = R.drawable.exclamation
+                colorCode = "red"
+            })
+            startActivity(intentBigAlert)
         }
     }
 }

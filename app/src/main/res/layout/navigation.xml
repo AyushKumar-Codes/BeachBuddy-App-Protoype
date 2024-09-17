@@ -9,14 +9,14 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="185dp"
+        android:layout_width="0dp"
         android:layout_height="57dp"
         android:layout_marginStart="28dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:gravity="center"
         android:text="Navigate"
         android:textColor="#37D09A"
-        android:textSize="40dp"
+        android:textSize="24dp"
         app:layout_constraintBottom_toTopOf="@+id/navcard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -33,23 +33,42 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/navi_button"
-                    style="@style/ToggleButtonWithIconOnly"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="0dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@android:color/transparent"
-                    android:fontFamily="@font/belanosima_semibold"
-                    android:singleLine="false"
-                    android:text="Find Route"
-                    android:textSize="15sp"
-                    app:checkedIconTint="@null"
-                    app:cornerRadius="0dp"
-                    app:icon="@drawable/nav_button"
-                    app:iconGravity="start"
-                    app:iconSize="50dp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/navi_button"
+            style="@style/ToggleButtonWithIconOnly"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="0dp"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/transparent"
+            android:fontFamily="@font/belanosima_semibold"
+            android:singleLine="false"
+            android:text="Find Route"
+            android:textSize="15sp"
+            app:checkedIconTint="@null"
+            app:cornerRadius="0dp"
+            app:icon="@drawable/nav_button"
+            app:iconGravity="start"
+            app:iconSize="50dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/viewBeach"
+            style="@style/ToggleButtonWithIconOnly"
+
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+
+            android:layout_weight="1"
+
+            android:backgroundTint="@android:color/transparent"
+            android:fontFamily="@font/belanosima_semibold"
+            android:singleLine="false"
+            android:text="View Beach"
+            android:textSize="12sp"
+            app:checkedIconTint="@null"
+            app:cornerRadius="0dp"
+            app:iconGravity="start"
+            app:iconSize="50dp"/>
 
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
