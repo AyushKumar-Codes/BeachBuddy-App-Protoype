@@ -36,7 +36,7 @@ class PlaceAdapter(private val placesList: MutableList<String>, private val onIt
             // Set the onClickListener for the constraint layout
             placeConstraintLayer.setOnClickListener {
                 Log.d("testing", "Pressed ${placeText.text}")
-                onItemClick(String.toString()) // Call the callback with the selected Place
+                onItemClick(place) // Call the callback with the selected Place
             }
         }
     }

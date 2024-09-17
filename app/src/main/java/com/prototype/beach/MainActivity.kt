@@ -61,6 +61,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
+import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
@@ -160,6 +161,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     // Data
     private lateinit var AllBeachesList: MutableList<Beach>
     private lateinit var AllPlacesList: MutableList<String>
+    private lateinit var AllPlacesObjectsList:MutableList<PlacesClass>
 
 
 
@@ -262,9 +264,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         initBigAlert()
 
 
+        initGetBeachesTemp()
+
+
 
 
         initAIChatAssistant()
+
+
+
+        initLengend()
 
 
 
@@ -334,7 +343,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             BeachesList = mutableListOf(selectedBeach)
             showSuggestions(false)
             searchBeaches(BeachesList)
-
         }
     }
 
@@ -411,7 +419,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             "Kanyakumari",
             "Thiruvananthapuram",
             "Murudeshwar",
-            "Chandipur"
+            "Chandipur",
+            "Andhra Pradesh",
+            "Tamil Nadu"
         )
 
         PlaceRecyclerView = binding.includesearch.placesRecyclerView
@@ -445,15 +455,130 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
     }
 
+    private fun initGetBeachesTemp(){
+        AllPlacesObjectsList = mutableListOf()
+
+        // Reading JSON file from resources
+        val jsonStream = assets.open("Places.json")
+        val reader = InputStreamReader(jsonStream)
+
+        // Parsing JSON data
+        val gson = Gson()
+        val placeType = object : TypeToken<List<PlacesJSON>>() {}.type
+        val placeJsonList: List<PlacesJSON> = gson.fromJson(reader, placeType)
+
+        // Create and populate Beach objects
+        for (placeJson in placeJsonList) {
+            val place = PlacesClass()
+
+            place.name = placeJson.name
+            place.markers = placeJson.marker
+            Log.d("initGetBeachesTemp", "place.markers.size: ${place.markers.size}")
+            place.marker_name = placeJson.marker_name
+            place.polygons = placeJson.polygon
+            Log.d("initGetBeachesTemp", "place.polygons.size: ${place.polygons.size}")
+
+
+            Log.d("initGetBeachesTemp", "name: ${place.name}")
+            AllPlacesObjectsList.add(place)
+        }
+
+        Log.d("In loadBeachesFromJson","AllBeachesList.size = ${AllBeachesList.size}")
+    }
+
+    private fun createMarkersFromAnIntArray(coordinates: List<Double>, markerName : String){
+        var beachLatLng = LatLng(coordinates[0], coordinates[1])
+        mGoogleMap!!.addMarker(MarkerOptions().position(beachLatLng).title(markerName).icon(BitmapDescriptorFactory.fromBitmap(beachIcon)))
+
+        Log.d("createMarkersFromAnIntArray", "Added Marker at ${coordinates[0]}, ${coordinates[1]} for beach ${markerName}")
+    }
+
+    private fun getRandomStrokeColor(): Int {
+        val colors = listOf(
+            Color.argb(150, 0, 255, 0),   // Green
+            Color.argb(150, 255, 165, 0), // Orange
+            Color.argb(150, 255, 0, 0)    // Red
+        )
+
+        // Randomly select a color from the list
+        return colors[Random.nextInt(colors.size)]
+    }
+
+    private fun createPolygonsFromAListofList(polygonCoordinates: List<List<Double>>) {
+        var randomColor = getRandomStrokeColor()
+
+        // Initialize PolygonOptions to configure the polygon
+        val polygonOptions = PolygonOptions()
+            .fillColor(Color.argb(108, 227, 255, 255)) // Semi-transparent fill color (ARGB format)
+            .fillColor(randomColor) // Semi-transparent fill color (ARGB format)
+            .strokeColor(Color.argb(205, 129, 131, 140)) // Opaque stroke color (ARGB format)
+            .strokeWidth(5f) // Stroke width for the polygon
+
+        // Iterate through the list of coordinates and add them to the PolygonOptions
+        for (polygonCoordinate in polygonCoordinates) {
+            // Log the coordinates for debugging
+            Log.d("createPolygonsFromAListofList", "polygonCoordinate[0], polygonCoordinate[1]: ${polygonCoordinate[0]}, ${polygonCoordinate[1]}")
+
+            // Convert the coordinates to LatLng and add to the PolygonOptions
+            val latLng = LatLng(polygonCoordinate[1], polygonCoordinate[0])
+            polygonOptions.add(latLng)
+        }
+
+        // Add the polygon to the map
+        val polygon = mGoogleMap?.addPolygon(polygonOptions)
+
+        // Log a message indicating that the polygon has been added
+        Log.d("createPolygonsFromAListofList", "Added Polygon with ${polygon?.points?.size} points")
+    }
+
+
     private fun searchPlaces(Places: MutableList<String>) {
+        Log.d("searchPlaces", "Entered searchPlaces(): ${AllPlacesObjectsList.size}")
+
         updateSearchTitlePlaces(Places)
+
+        Log.d("searchPlaces", "Places.size: ${Places.size}")
+
+        showSuggestions(false)
+
+        clearMarkersFromAnArray()
+
+        for(place in AllPlacesObjectsList){
+            Log.d("searchPlaces", "place.name: ${place.name}")
+        }
+
+        for(place in Places){
+            Log.d("searchPlaces", "place also in Places: ${place}")
+        }
+
+        val place = AllPlacesObjectsList.find { place ->
+            place.name.equals(Places[0], ignoreCase = true)
+        }
+
+        Log.d("searchPlaces", "place.name = ${place?.name}")
+
+        if (place != null) {
+            Log.d("searchPlaces", "place != null")
+            Log.d("searchPlaces","place.markers.size: ${place.markers.size}")
+
+            for (i in place.markers.indices) {
+                Log.d("searchPlaces", "indices: ${i} for ${place.marker_name[i]}")
+                createMarkersFromAnIntArray(place.markers[i], place.marker_name[i])
+            }
+        }
+
+        if (place != null) {
+            Log.d("searchPlaces", "place != null for polygons")
+            Log.d("searchPlaces","place.polygons.size: ${place.polygons.size}")
+
+            for(polygonsOfBeach in place.polygons){
+                createPolygonsFromAListofList(polygonsOfBeach)
+            }
+        }
 
         showSuggestions(false)
 
 
-
-        createMarkersFromAnArray(Beaches)
-        createPolygonsFromAnArray(Beaches)
 
         binding.suggestionRecyclerViewer.visibility = View.VISIBLE
         binding.menu.visibility = View.VISIBLE
@@ -564,8 +689,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
                 showSuggestions(true)
 
-                updateSearchTitlePlaces(computeSuggestionsPlaces(newText))
                 updateSearchTitle(computeSuggestions(newText))
+                updateSearchTitlePlaces(computeSuggestionsPlaces(newText))
                 return false
             }
         })
@@ -1781,8 +1906,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
+    // for legend
+    private fun initLengend(){
+        binding.legendImageView.setImageResource(R.drawable.legend)
+
+        binding.legendConstraintLayout.visibility = View.GONE
+
+        // defines an event when the notification bell is clicked on
+        binding.legendImageView.setOnClickListener{
+            if(binding.legendConstraintLayout.visibility == View.GONE){
+                binding.legendConstraintLayout.visibility = View.VISIBLE
+            }
+            else{
+                binding.legendConstraintLayout.visibility = View.GONE
+            }
+        }
+    }
+
+
+
+
     // TESTING
     fun testNotification(){     // #testing
+        return@testNotification
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000L) // Delay is in milliseconds (5000ms = 5 seconds)
             var isAlerted = false
