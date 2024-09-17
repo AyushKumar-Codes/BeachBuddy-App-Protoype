@@ -390,36 +390,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         AllPlacesList = mutableListOf()
 
         AllPlacesList = mutableListOf(
+            "Gujarat",
+            "andaman and nicobar",
+            "Karnataka",
             "Goa",
-            "Kovalam",
-            "Varkala",
-            "Alleppey",
-            "Gokarna",
-            "Pondicherry",
             "Chennai",
-            "Mahabalipuram",
-            "Rameswaram",
-            "Puri",
-            "Digha",
-            "Mandarmani",
-            "Vizag (Visakhapatnam)",
-            "Havelock Island (Andaman)",
-            "Neil Island (Andaman)",
-            "Diu",
-            "Somnath",
-            "Dwarka",
-            "Alibaug",
-            "Kashid",
-            "Ratnagiri",
-            "Ganpatipule",
-            "Tarkarli",
-            "Karwar",
-            "Mangalore",
-            "Bekal",
-            "Kanyakumari",
-            "Thiruvananthapuram",
-            "Murudeshwar",
-            "Chandipur",
             "Andhra Pradesh",
             "Tamil Nadu"
         )
@@ -495,9 +470,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
     private fun getRandomStrokeColor(): Int {
         val colors = listOf(
-            Color.argb(150, 0, 255, 0),   // Green
-            Color.argb(150, 255, 165, 0), // Orange
-            Color.argb(150, 255, 0, 0)    // Red
+            Color.argb(100, 0, 255, 0),   // Green
+            Color.argb(100, 255, 165, 0), // Orange
+            Color.argb(100, 255, 0, 0)    // Red
         )
 
         // Randomly select a color from the list
@@ -576,9 +551,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             }
         }
 
+
+        binding.search.setIconified(true)
+        binding.search.isFocusable = false
+        binding.search.clearFocus()
+        binding.includesearch.placesTextView.text = "Explore Beaches"
+
         showSuggestions(false)
-
-
 
         binding.suggestionRecyclerViewer.visibility = View.VISIBLE
         binding.menu.visibility = View.VISIBLE
