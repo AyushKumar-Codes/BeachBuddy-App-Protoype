@@ -32,6 +32,10 @@
             android:resource="@array/preloaded_fonts"
         />
 
+        <receiver android:name=".MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

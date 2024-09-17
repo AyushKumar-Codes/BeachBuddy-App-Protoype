@@ -2,6 +2,7 @@ package com.prototype.beach
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -16,6 +17,7 @@ import android.graphics.Color
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
@@ -224,6 +226,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         // initializing the data-binding
         alertBinding = DataBindingUtil.setContentView(this, R.layout.alert)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        initAlertAlarm(baseContext)
 
         initMap()
 
@@ -1903,6 +1907,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
                 binding.legendConstraintLayout.visibility = View.GONE
             }
         }
+    }
+
+
+
+
+
+    // for alert alarm
+    fun initAlertAlarm(context: Context) {
+        Log.d("initAlertAlarm", "Entered initAlertAlarm function")
+
+        // Create an intent to trigger the broadcast receiver
+        val intent = Intent(context, MyBroadcastReceiver::class.java)
+
+        // Create a pending intent that will trigger the broadcast receiver
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Get the AlarmManager service
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        // Schedule the alarm to trigger in 10 seconds
+        alarmManager.set(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 5 * 1000, // 5 seconds
+            pendingIntent
+        )
     }
 
 
