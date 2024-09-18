@@ -153,15 +153,18 @@
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/coordinatorLayout"
+
             android:layout_width="match_parent"
-            android:layout_height="661dp"
+            android:layout_height="0sp"
+
             android:elevation="100dp"
             android:visibility="visible"
+
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintBottom_toTopOf="@+id/menu"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/suggestionRecyclerViewer"
+            app:layout_constraintTop_toTopOf="parent"
 
             app:layout_constraintVertical_bias="1.0">
 
@@ -198,7 +201,6 @@
                     android:id="@+id/includeweather"
                     layout="@layout/weather" />
             </FrameLayout>
-
 
             <FrameLayout
                 android:id="@+id/bottom_Alert"
@@ -270,6 +272,7 @@
                 <Button
                     android:id="@+id/act"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_margin="0dp"
@@ -287,6 +290,7 @@
                 <Button
                     android:id="@+id/weather"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -303,6 +307,7 @@
                 <Button
                     android:id="@+id/alerts"
                     style="@style/ToggleButtonWithIconOnly"
+
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -416,7 +421,7 @@
                         android:layout_marginRight="10sp"
                         android:textSize="16sp"
 
-                        android:text="Marginaly safe"
+                        android:text="Marginally safe"
                         />
 
                     <View

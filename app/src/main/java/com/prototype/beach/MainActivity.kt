@@ -15,12 +15,16 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -69,7 +73,6 @@ import kotlin.random.Random
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.OnToggleClickListener, ActivitiesAdaptor.OnItemClickListener {
     // for viewbinding
     lateinit var binding: ActivityMainBinding
-    lateinit var alertBinding: AlertBinding
 
 
 
@@ -224,7 +227,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         intentMainActivity = Intent(this, MainActivity::class.java)
 
         // initializing the data-binding
-        alertBinding = DataBindingUtil.setContentView(this, R.layout.alert)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         initAlertAlarm(baseContext)
@@ -535,6 +537,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             place.name.equals(Places[0], ignoreCase = true)
         }
 
+        if(place == null){
+            binding.search.setIconified(true)
+            binding.search.isFocusable = false
+            binding.search.clearFocus()
+            binding.includesearch.placesTextView.text = "Explore Beaches"
+            return
+        }
+
         Log.d("searchPlaces", "place.name = ${place?.name}")
 
         if (place != null) {
@@ -567,7 +577,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         binding.suggestionRecyclerViewer.visibility = View.VISIBLE
         binding.menu.visibility = View.VISIBLE
         binding.includesearch.RecyclerConstraintLayout.visibility = View.GONE
-        moveCameraToDefaultPosition()
+
+
+
+        // move camera to first marker
+        var coordinate = place!!.markers[0]
+        val newCameraPosition = CameraPosition(LatLng(coordinate[0], coordinate[1]), 14.0F, 0F, 0F)
+        CameraUpdateFactory.newCameraPosition(newCameraPosition)
+        mGoogleMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition))
     }
 
     private fun initBeachesTrie(){
@@ -1360,6 +1377,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     }
 
     private fun bottomSheet_alert() {
+        Log.d("bottomSheet_alert", "Entered bottomSheet_alert()")
+
         fun initFilteredAlertsNotification(){
             Log.d("Alerts", "In initRecycler with ${DataRepository.notificationsList.size} notifications")
 
@@ -1371,7 +1390,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
 
 
 
-            notificationRecyclerView = alertBinding.notificationRecyclerView
+            notificationRecyclerView = binding.includealert.notificationRecyclerView
             notificationRecyclerView.layoutManager = LinearLayoutManager(this)
             notificationRecyclerView.setHasFixedSize(false)
 
@@ -1387,11 +1406,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             Log.d("Alerts", "notificationAdapter.itemCount: ${notificationAdapter.itemCount}")
         }
 
+        fun initHelpButton(button: ImageButton, phoneNumber: Long) {
+            button.setImageResource(R.drawable.phone)
+            Log.d("initHelpButton", "Entered initHelpButton()")
+
+            button.setOnClickListener {
+                Log.d("initHelpButton", "Clicked on initHelpButton")
+
+                // Create an intent to open the dialer
+                val intent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$phoneNumber")
+                }
+
+                // Start the activity to open the dialer
+                startActivity(intent)
+
+                // Toggle the button state (for example, unselect after pressing)
+                button.isSelected = false
+            }
+        }
+
         initFilteredAlertsNotification()
 
         val bottomSheet = binding.bottomAlert
         alertBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         alertBottomSheetBehavior?.peekHeight = 200
+
+        initHelpButton(binding.includealert.medicalHelpButton, 1111111111)
+        initHelpButton(binding.includealert.policeHelpButton, 2222222222)
+        initHelpButton(binding.includealert.coastGuardHelpButton, 3333333333)
     }
 
     // This is function is for ontoggle event for suggestion
@@ -1826,7 +1869,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
             )
 
             val mockListOfRandomNotifications: MutableList<NotificationClass> = mutableListOf()
-            for (i in 1..10) {
+            for (i in 1..20) {
                 mockListOfRandomNotifications.add(
                     NotificationClass().apply {
                         id = DataRepository.globalNotificationID++
