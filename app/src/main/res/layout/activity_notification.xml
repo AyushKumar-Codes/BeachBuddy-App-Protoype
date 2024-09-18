@@ -91,34 +91,7 @@
                 android:background="@color/black"
 
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/bottomMenu"
                 />
-
-            <LinearLayout
-                android:id="@+id/bottomMenu"
-
-                android:layout_width="match_parent"
-                android:layout_height="80sp"
-                android:layoutDirection="rtl"
-
-                android:paddingHorizontal="20sp"
-
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent">
-
-                <ImageView
-                    android:id="@+id/helpButton"
-                    android:layout_width="40sp"
-                    android:layout_height="40sp"
-
-                    android:adjustViewBounds="true"
-                    android:scaleType="fitCenter"
-
-                    android:layout_gravity="center_vertical"
-                    />
-
-
-            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

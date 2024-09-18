@@ -37,7 +37,6 @@ class NotificationActivity : AppCompatActivity(){
         viewBinding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
 
         initRecycler()
-        initHelpButton()
     }
 
 
@@ -56,24 +55,5 @@ class NotificationActivity : AppCompatActivity(){
         notificationAdapter = NotificationRecyclerView.adapter as NotificationAdapter
 
         notificationAdapter.notifyDataSetChanged()
-    }
-
-    private fun initHelpButton(){
-        viewBinding.helpButton.setImageResource(R.drawable.call_emergency)
-
-        var mockPhoneNumber = 1111111111
-
-        viewBinding.helpButton.setOnClickListener {
-            Log.d("HelpButton", "Clicked on Help Button")
-
-            // Create an intent to open the dialer
-            val intent = Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:${mockPhoneNumber}")
-            }
-
-            // Start the activity to open the dialer
-            startActivity(intent)
-        }
-
     }
 }

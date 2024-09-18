@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
 
-    tools:context=".MainActivity"
-    >
+    tools:context=".MainActivity">
     <androidx.constraintlayout.widget.ConstraintLayout
 
         android:layout_width="match_parent"
@@ -36,24 +35,25 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/urgentAlerts_constraintLayout"
+
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="400sp"
 
             app:layout_constraintTop_toBottomOf="@id/title_cardView"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            >
+            app:layout_constraintBottom_toTopOf="@id/bottomMenu_constraintLayout">
 
             <ScrollView
                 android:id="@+id/alertRecycler_scrollView"
 
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
 
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                >
+                app:layout_constraintRight_toRightOf="parent">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/notification_recyclerView"
@@ -63,21 +63,143 @@
 
             </ScrollView>
 
-            <View
-                android:id="@+id/titleSeperator"
-                android:layout_width="match_parent"
-                android:layout_height="2sp"
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                android:layout_marginTop="6sp"
-                android:layout_marginBottom="2sp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottomMenu_constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+            app:layout_constraintTop_toBottomOf="@id/urgentAlerts_constraintLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
 
                 android:background="@color/black"
 
-                app:layout_constraintTop_toBottomOf="@id/alertRecycler_scrollView"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/emergency_bottomMenu"
                 />
+
+            <LinearLayout
+                android:id="@+id/emergency_bottomMenu"
+
+                android:layout_width="match_parent"
+                android:layout_height="100sp"
+
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent">
+
+
+                <LinearLayout
+                    android:orientation="vertical"
+
+                    android:layout_width="40sp"
+                    android:layout_height="match_parent"
+
+                    android:layout_weight="1"
+                    >
+
+                    <ImageButton
+                        android:id="@+id/medicalHelpButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="80sp"
+                        android:padding="10sp"
+
+
+
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
+                        android:backgroundTint="#aaa"
+                        app:iconGravity="top"
+
+
+                        android:layout_gravity="center_vertical"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="Medical"
+                        android:layout_gravity="center"
+                        android:textAlignment="center"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+
+                    android:layout_width="40sp"
+                    android:layout_height="match_parent"
+
+                    android:layout_weight="1"
+                    >
+
+                    <ImageButton
+                        android:id="@+id/policeHelpButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="80sp"
+                        android:padding="10sp"
+
+
+
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
+                        android:backgroundTint="#aaa"
+                        app:iconGravity="top"
+
+
+                        android:layout_gravity="center_vertical"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="Police"
+                        android:layout_gravity="center"
+                        android:textAlignment="center"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+
+                    android:layout_width="40sp"
+                    android:layout_height="match_parent"
+
+                    android:layout_weight="1"
+                    >
+
+                    <ImageButton
+                        android:id="@+id/coastGuardHelpButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="80sp"
+                        android:padding="10sp"
+
+
+
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
+                        android:backgroundTint="#aaa"
+                        app:iconGravity="top"
+
+
+                        android:layout_gravity="center_vertical"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Coast Guard"
+                        android:layout_gravity="center"
+                        android:textAlignment="center"
+                        />
+
+                </LinearLayout>
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
