@@ -1204,6 +1204,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
     // Functions for Bottom Menu
     private fun initBottomMenu(){
         bottommenu = binding.bottommenu
+        binding.menu.visibility = View.INVISIBLE
         bottommenu.addOnButtonCheckedListener { _, checkid, ischecked ->
             if (ischecked) {
                 binding.navibutton.visibility = View.GONE
@@ -1961,7 +1962,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, SuggestionAdapter.
         Log.d("initAlertAlarm", "Entered initAlertAlarm function")
 
         // Create an intent to trigger the broadcast receiver
-        val intent = Intent(context, MyBroadcastReceiver::class.java)
+        val intent = Intent(context, AlertReceiver::class.java)
 
         // Create a pending intent that will trigger the broadcast receiver
         val pendingIntent = PendingIntent.getBroadcast(
