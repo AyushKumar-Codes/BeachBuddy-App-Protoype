@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/beach_topBar_ConstratintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/material_dynamic_tertiary90"
+
+            app:layout_constraintRight_toRightOf="@id/beach_topBar_ConstratintLayout"
+            app:layout_constraintLeft_toLeftOf="@id/beach_topBar_ConstratintLayout"
+            app:layout_constraintTop_toTopOf="@id/beach_topBar_ConstratintLayout">
+
+            <Button
+                android:id="@+id/beach_topBar_backButtonView"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="16dp"
+                android:background="@drawable/arrow_back"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="@id/beach_topBar_ConstratintLayout"
+                app:layout_constraintTop_toTopOf="@id/beach_topBar_ConstratintLayout" />
+
+            <TextView
+                android:id="@+id/beach_topBar_beachTitleTextView"
+
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:text="Marina Beach"
+                android:textAlignment="center"
+                android:textSize="22sp"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/beach_topBar_mapButtonView"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/map"
+                app:layout_constraintHorizontal_bias="0.9"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="@id/beach_topBar_ConstratintLayout"
+                app:layout_constraintLeft_toRightOf="@+id/beach_topBar_beachTitleTextView"
+                app:layout_constraintTop_toTopOf="@id/beach_topBar_ConstratintLayout" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/beach_categoryBar_ConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+
+            android:background="@color/material_dynamic_tertiary80"
+
+            app:layout_constraintTop_toBottomOf="@id/beach_topBar_ConstratintLayout"
+            app:layout_constraintLeft_toLeftOf="@id/beach_topBar_ConstratintLayout"
+            app:layout_constraintRight_toLeftOf="@id/beach_topBar_ConstratintLayout">
+
+            <TextView
+                android:id="@+id/beach_categoryBar_generalButtonView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/tags_background"
+
+                android:text="General"
+                android:textAlignment="center"
+                android:textSize="16sp"
+
+                app:layout_constraintBottom_toBottomOf="@id/beach_categoryBar_ConstraintLayout"
+                app:layout_constraintRight_toLeftOf="@id/beach_categoryBar_weatherButtonView"
+                app:layout_constraintLeft_toLeftOf="@id/beach_categoryBar_ConstraintLayout"
+                app:layout_constraintTop_toTopOf="@id/beach_categoryBar_ConstraintLayout" />
+            <TextView
+                android:id="@+id/beach_categoryBar_weatherButtonView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/tags_background"
+
+                android:text="Weather"
+                android:textAlignment="center"
+                android:textSize="16sp"
+
+                app:layout_constraintBottom_toBottomOf="@id/beach_categoryBar_ConstraintLayout"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toRightOf="@id/beach_categoryBar_generalButtonView"
+                app:layout_constraintTop_toTopOf="@id/beach_categoryBar_ConstraintLayout" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/beach_subcategoryBar_ConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/material_dynamic_primary90"
+
+            app:layout_constraintTop_toBottomOf="@id/beach_categoryBar_ConstraintLayout"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

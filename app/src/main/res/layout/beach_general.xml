@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/general_parentConstraintLayout"
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/general_aboutConstraintLayout"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+
+                app:layout_constraintTop_toTopOf="@id/general_parentConstraintLayout"
+                app:layout_constraintLeft_toLeftOf="@id/general_parentConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/general_parentConstraintLayout"
+                >
+
+                <TextView
+                    android:id="@+id/general_aboutTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+
+                    android:text="About"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+
+                    app:layout_constraintTop_toTopOf="@+id/general_aboutConstraintLayout"
+                    app:layout_constraintLeft_toLeftOf="@+id/general_aboutConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@+id/general_aboutConstraintLayout"
+                />
+
+                <TextView
+                    android:id="@+id/general_"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:textAlignment="center"
+                    android:text="The beach is the first longest beach in India and the second longest in the world. The length of the beach is 13 km"
+                    android:textColor="@color/black"
+
+                    app:layout_constraintTop_toBottomOf="@id/general_aboutTitleTextView"
+                    app:layout_constraintLeft_toLeftOf="@id/general_aboutConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_aboutConstraintLayout"
+                />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/general_photosConstraintLayout"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+
+                app:layout_constraintTop_toBottomOf="@id/general_aboutConstraintLayout"
+                app:layout_constraintLeft_toLeftOf="@id/general_aboutConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/general_aboutConstraintLayout"
+                >
+
+                <TextView
+                    android:id="@+id/general_photoTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="Photos"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+
+                    app:layout_constraintTop_toTopOf="@+id/general_photosConstraintLayout"
+                    app:layout_constraintLeft_toLeftOf="@+id/general_photosConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@+id/general_photosConstraintLayout"
+                    />
+
+                <ImageView
+                    android:id="@+id/general_photoImageView"
+
+                    android:layout_width="350dp"
+                    android:layout_height="350dp"
+                    android:background="@drawable/beach_marina"
+                    android:layout_marginTop="8dp"
+
+
+                    app:layout_constraintTop_toBottomOf="@id/general_photoTitleTextView"
+                    app:layout_constraintLeft_toLeftOf="@id/general_photosConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_photosConstraintLayout"
+                />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/general_sunTimingsConstraintLayout"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+
+                app:layout_constraintTop_toBottomOf="@id/general_photosConstraintLayout"
+                app:layout_constraintLeft_toLeftOf="@id/general_photosConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/general_photosConstraintLayout"
+                >
+
+                <TextView
+                    android:id="@+id/general_sunTimingsTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="Activities"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+
+                    app:layout_constraintTop_toTopOf="@id/general_sunTimingsConstraintLayout"
+                    app:layout_constraintLeft_toLeftOf="@id/general_sunTimingsConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_sunTimingsConstraintLayout"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/sunTimings_recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+
+                    app:layout_constraintTop_toBottomOf="@id/general_sunTimingsTitleTextView"
+                    app:layout_constraintLeft_toLeftOf="@id/general_sunTimingsConstraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_sunTimingsConstraintLayout"
+                    />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/general_currentWeather_constraintLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                app:layout_constraintTop_toBottomOf="@id/general_sunTimingsConstraintLayout"
+                app:layout_constraintLeft_toLeftOf="@id/general_parentConstraintLayout"
+                app:layout_constraintRight_toRightOf="@id/general_parentConstraintLayout"
+                >
+                <TextView
+                    android:id="@+id/general_currentWeatherTitle_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="Current Weather"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+
+                    app:layout_constraintTop_toTopOf="@id/general_currentWeather_constraintLayout"
+                    app:layout_constraintLeft_toLeftOf="@id/general_currentWeather_constraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_currentWeather_constraintLayout"
+                    />
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/general_currentWeather_sky_CardView"
+                    android:layout_width="100sp"
+                    android:layout_height="80sp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    app:cardElevation="8dp"
+                    app:cardCornerRadius="10sp"
+
+                    app:layout_constraintTop_toBottomOf="@id/general_currentWeatherTitle_textView"
+                    app:layout_constraintLeft_toLeftOf="@id/general_currentWeather_constraintLayout"
+                    app:layout_constraintRight_toRightOf="@id/general_currentWeather_constraintLayout"
+                    app:layout_constraintBottom_toBottomOf="@id/general_currentWeather_constraintLayout"
+                    >
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/general_currentWeather_skyCard_ConstraintLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/cards_activities">
+
+                        <ImageView
+                            android:id="@+id/general_currentWeather_skyCard_Image"
+                            android:layout_width="50dp"
+                            android:layout_height="40dp"
+                            android:layout_margin="4dp"
+
+                            android:background="@drawable/day_cloudy"
+                            android:adjustViewBounds="true"
+                            android:scaleType="centerCrop"
+
+                            app:layout_constraintTop_toTopOf="@id/general_currentWeather_skyCard_ConstraintLayout"
+                            app:layout_constraintLeft_toLeftOf="@id/general_currentWeather_skyCard_ConstraintLayout"
+                            app:layout_constraintRight_toRightOf="@id/general_currentWeather_skyCard_ConstraintLayout"
+                            />
+
+                        <TextView
+                            android:id="@+id/general_currentWeather_skyCard_Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="8dp"
+                            android:layout_marginRight="8dp"
+                            android:layout_marginTop="8dp"
+
+                            android:text="Mostly Cloudy"
+                            android:textColor="@color/black"
+                            android:textSize="14sp"
+
+                            app:layout_constraintLeft_toLeftOf="@id/general_currentWeather_skyCard_ConstraintLayout"
+                            app:layout_constraintRight_toRightOf="@id/general_currentWeather_skyCard_ConstraintLayout"
+                            app:layout_constraintTop_toBottomOf="@+id/general_currentWeather_skyCard_Image" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.cardview.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>
