@@ -39,6 +39,8 @@ The primary objective of **BeachBuddy** is to ensure safety and provide an intui
 | **Safety Alerts** 🚨    | Timely notifications for dangerous conditions like high waves or storms.   | ![Alerts](link_to_image_3.png) |
 | **Personalization** 🎯 | Tailored notifications based on user-selected activities and preferences.  | ![Personalization](link_to_image_4.png) |
 | **Interactive Interface** 🖥️ | User-friendly design with easy navigation and beach details.              | ![Interface](link_to_image_5.png) |
+| **Color-Coding Demonstration** 🎨 | Visual representation of safety levels using a color-coded system. (e.g., Green: Safe, Yellow: Caution, Red: Dangerous) | ![ColorCoding](link_to_image_6.png) |
+
 
 ---
 
