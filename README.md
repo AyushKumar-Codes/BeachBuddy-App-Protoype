@@ -34,12 +34,12 @@ The primary objective of **BeachBuddy** is to ensure safety and provide an intui
 
 | Feature                | Description                                                                 | Screenshot |
 |------------------------|-----------------------------------------------------------------------------|------------|
-| **Real-Time Data** 📡  | Consolidated, up-to-date information on ocean conditions and weather.       | ![Data](link_to_image_1.png) |
-| **Geospatial Mapping** 🗺️ | Interactive maps with color-coded indicators for beach safety.             | ![Map](link_to_image_2.png) |
-| **Safety Alerts** 🚨    | Timely notifications for dangerous conditions like high waves or storms.   | ![Alerts](link_to_image_3.png) |
-| **Personalization** 🎯 | Tailored notifications based on user-selected activities and preferences.  | ![Personalization](link_to_image_4.png) |
-| **Interactive Interface** 🖥️ | User-friendly design with easy navigation and beach details.              | ![Interface](link_to_image_5.png) |
-| **Color-Coding Demonstration** 🎨 | Visual representation of safety levels using a color-coded system. (e.g., Green: Safe, Yellow: Caution, Red: Dangerous) | ![ColorCoding](link_to_image_6.png) |
+| **Real-Time Data** 📡  | Consolidated, up-to-date information on ocean conditions and weather.       | <div align="center"><img src="https://github.com/user-attachments/assets/e01be8dd-ef48-4a0a-aa46-e6884c02399d" width="100" height="100"> <img src="https://github.com/user-attachments/assets/378ea0f0-72ab-4d41-9ed8-219d3beef59c" width="100" height="100"></div> |
+| **Geospatial Mapping** 🗺️ | Interactive maps with color-coded indicators for beach safety.             | <div align="center"><img src="https://github.com/user-attachments/assets/79da11d0-1975-4a74-b732-c7d8d12e8fc4" width="100" height="100"> <img src="https://github.com/user-attachments/assets/7331c057-4564-4821-b196-e13faaf29b6c" width="100" height="100"> <img src="https://github.com/user-attachments/assets/914e8070-9eeb-413c-9876-7772f749faef" width="100" height="100"></div> |
+| **Safety Alerts** 🚨    | Timely notifications for dangerous conditions like high waves or storms.   | <div align="center"><img src="https://github.com/user-attachments/assets/40c8c348-11fb-4924-9c92-5c637f4a1def" width="100" height="100"> <img src="https://github.com/user-attachments/assets/91f40048-dfcf-4c75-8c77-b7758f2cc426" width="100" height="100"> <img src="https://github.com/user-attachments/assets/860f7ec0-8749-4f28-a354-ea02027fe565" width="100" height="100"> <img src="https://github.com/user-attachments/assets/63f5d781-c2db-4003-b633-2e9eea443822" width="100" height="100"></div> |
+| **Personalization** 🎯 | Tailored notifications based on user-selected activities and preferences.  | <div align="center"><img src="https://github.com/user-attachments/assets/4552cf72-c695-4f00-a8aa-6250f39257dc" width="100" height="100"> <img src="https://github.com/user-attachments/assets/20efc430-99c8-410c-ab24-ef441cd785e3" width="100" height="100"></div> |
+| **Interactive Interface** 🖥️ | User-friendly design with easy navigation and beach details.              | <div align="center"><img src="https://github.com/user-attachments/assets/a8e7c154-0ef8-484d-af77-e7e516fb12c0" width="100" height="100"> <img src="https://github.com/user-attachments/assets/9baf6181-b5c0-492d-8350-304b14df7136" width="100" height="100"> <img src="https://github.com/user-attachments/assets/8549f459-e818-472a-bd98-ee75558a1323" width="100" height="100"></div> |
+
 
 
 ---
