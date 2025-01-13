@@ -1,5 +1,7 @@
 # BeachBuddy: Real-Time Beach Safety & Suitability App 🌊🏖️
-<img src="https://github.com/user-attachments/assets/0cf95236-e973-4bf9-89ac-0dd709334181" alt="searchbeach" width="32" height="32">
+
+<img src="https://github.com/user-attachments/assets/0cf95236-e973-4bf9-89ac-0dd709334181" alt="searchbeach" width="48" height="48">
+
 ## Overview
 **BeachBuddy** is a mobile application designed to enhance the safety and enjoyment of recreational activities at beach locations across India. By leveraging real-time oceanic, meteorological, and water quality data, the app provides tourists and locals with accurate assessments of beach conditions for activities like swimming, surfing, and boating.
 
