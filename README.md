@@ -1,5 +1,5 @@
 # BeachBuddy: Real-Time Beach Safety & Suitability App 🌊🏖️
-
+![searchbeach](https://github.com/user-attachments/assets/0cf95236-e973-4bf9-89ac-0dd709334181)
 ## Overview
 **BeachBuddy** is a mobile application designed to enhance the safety and enjoyment of recreational activities at beach locations across India. By leveraging real-time oceanic, meteorological, and water quality data, the app provides tourists and locals with accurate assessments of beach conditions for activities like swimming, surfing, and boating.
 
@@ -127,4 +127,4 @@ The primary objective of **BeachBuddy** is to ensure safety and provide an intui
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourUsername/BeachBuddy-App.git
+   git clone https://github.com/AyushKumar-Codes/BeachBuddy-App-Protoype.git
