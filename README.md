@@ -80,7 +80,7 @@ The primary objective of **BeachBuddy** is to ensure safety and provide an intui
    - App deployment on Android and iOS platforms.
 
 ### Application Flowchart
-> *(Insert flowchart image or diagram here)*
+> ![Picture16](https://github.com/user-attachments/assets/1912c426-65b8-4981-bc78-82f8d2b97aab)
 
 ---
 
